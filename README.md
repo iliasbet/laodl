@@ -4,7 +4,9 @@ A web application for deep learning visualization and exploration.
 
 ## Description
 
-This repository contains a web application built with HTML, CSS, and JavaScript for visualizing deep learning concepts. The application features a clean, modern interface with interactive elements.
+This repo contains an index.html for visualizing deep learning concepts.
+ALl visualizations are made with svg animations.
+The key concepts of deep learning are covered.
 
 ## Getting Started
 
