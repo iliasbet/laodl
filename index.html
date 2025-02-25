@@ -573,7 +573,24 @@
 
         .paused-animations * {
             animation-play-state: paused !important;
-            transition: none !important;
+            -webkit-animation-play-state: paused !important;
+        }
+        
+        .paused-animations [begin] {
+            /* Keep elements visible but pause their animations */
+            opacity: 1 !important;
+        }
+        
+        .paused-animations animate,
+        .paused-animations animateTransform,
+        .paused-animations animateMotion {
+            /* Effectively pause SVG animations */
+            display: none;
+        }
+        
+        /* Show the current state of the animation */
+        .paused-animations [opacity="0"] {
+            opacity: 1 !important;
         }
     </style>
 </head>
@@ -2944,24 +2961,28 @@
                 const svgElements = element.querySelectorAll('svg');
                 
                 svgElements.forEach(svg => {
+                    // Add a class to indicate this SVG's animations are paused
+                    svg.classList.add('paused-animations');
+                    
                     // Find all animation elements
                     const animations = svg.querySelectorAll('animate, animateTransform, animateMotion');
                     
-                    // Pause each animation by setting its 'running' attribute to false
+                    // Pause each animation
                     animations.forEach(animation => {
-                        // Using beginElement() and endElement() to control animations
-                        if (animation.getAttribute('begin') !== 'indefinite') {
-                            // Store the original begin value if not already stored
-                            if (!animation.hasAttribute('data-original-begin')) {
-                                animation.setAttribute('data-original-begin', animation.getAttribute('begin') || '0s');
-                            }
-                            // Set to indefinite to pause
-                            animation.setAttribute('begin', 'indefinite');
+                        // Store the current state if not already stored
+                        if (!animation.hasAttribute('data-paused')) {
+                            animation.setAttribute('data-paused', 'true');
                         }
                     });
                     
-                    // Also pause CSS transitions by adding a class
-                    svg.classList.add('paused-animations');
+                    // Make sure all animated elements are visible
+                    const animatedElements = svg.querySelectorAll('[begin]');
+                    animatedElements.forEach(el => {
+                        // Make sure the element is visible
+                        if (el.style.opacity === '0') {
+                            el.style.opacity = '1';
+                        }
+                    });
                 });
             }
             
@@ -2970,28 +2991,20 @@
                 const svgElements = element.querySelectorAll('svg');
                 
                 svgElements.forEach(svg => {
+                    // Remove the paused class
+                    svg.classList.remove('paused-animations');
+                    
                     // Find all animation elements
                     const animations = svg.querySelectorAll('animate, animateTransform, animateMotion');
                     
                     // Resume each animation
                     animations.forEach(animation => {
-                        if (animation.hasAttribute('data-original-begin')) {
-                            // Restore the original begin value
-                            animation.setAttribute('begin', animation.getAttribute('data-original-begin'));
-                            // Try to restart the animation
-                            try {
-                                animation.beginElement();
-                            } catch (e) {
-                                // Some browsers might not support beginElement
-                                console.log('Animation restart not supported in this browser');
-                            }
+                        if (animation.hasAttribute('data-paused')) {
+                            animation.removeAttribute('data-paused');
                         }
                     });
                     
-                    // Remove the pause class
-                    svg.classList.remove('paused-animations');
-                    
-                    // Make all animated elements visible
+                    // Make sure all animated elements are visible
                     const animatedElements = svg.querySelectorAll('[begin]');
                     animatedElements.forEach(el => {
                         el.style.opacity = '1';
@@ -3048,15 +3061,41 @@
                 }
             }
             
-            // Add CSS for paused animations
+            // Add CSS for paused animations - this is the key to making animations visible but paused
             const style = document.createElement('style');
             style.textContent = `
                 .paused-animations * {
                     animation-play-state: paused !important;
-                    transition: none !important;
+                    -webkit-animation-play-state: paused !important;
+                }
+                
+                .paused-animations [begin] {
+                    /* Keep elements visible but pause their animations */
+                    opacity: 1 !important;
+                }
+                
+                .paused-animations animate,
+                .paused-animations animateTransform,
+                .paused-animations animateMotion {
+                    /* Effectively pause SVG animations */
+                    display: none;
+                }
+                
+                /* Show the current state of the animation */
+                .paused-animations [opacity="0"] {
+                    opacity: 1 !important;
                 }
             `;
             document.head.appendChild(style);
+            
+            // Initial setup - make all SVG elements visible initially
+            sections.forEach(section => {
+                const svgElements = section.querySelectorAll('svg [begin]');
+                svgElements.forEach(el => {
+                    // Make all elements visible initially
+                    el.style.opacity = '1';
+                });
+            });
             
             // Initial check
             handleScrollAnimation();
