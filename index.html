@@ -2910,19 +2910,24 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Add the animate-on-scroll class to all sections
             const sections = document.querySelectorAll('section');
-            sections.forEach(section => {
+            sections.forEach((section, index) => {
                 section.classList.add('animate-on-scroll');
+                // Ensure each section has an ID for tracking
+                if (!section.id) {
+                    section.id = 'section-' + index;
+                }
             });
             
-            // Track which sections have been animated
-            const animatedSections = new Map();
+            // Track which section is currently active
+            let currentActiveSection = null;
             
             // Function to check if an element is in viewport
             function isInViewport(element) {
                 const rect = element.getBoundingClientRect();
+                // Consider an element in viewport if it's mostly visible
                 return (
-                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
-                    rect.bottom >= 0
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.7 &&
+                    rect.bottom >= (window.innerHeight || document.documentElement.clientHeight) * 0.3
                 );
             }
             
@@ -2946,30 +2951,53 @@
                 });
             }
             
+            // Function to reset all animations except for the current section
+            function resetAllAnimationsExcept(currentSectionId) {
+                sections.forEach(section => {
+                    if (section.id !== currentSectionId) {
+                        // Reset animations for all other sections
+                        resetSvgAnimations(section);
+                    }
+                });
+            }
+            
             // Function to handle scroll animation
             function handleScrollAnimation() {
-                const elements = document.querySelectorAll('.animate-on-scroll');
+                let foundActiveSection = false;
                 
-                elements.forEach(element => {
-                    const elementId = element.id || Math.random().toString(36).substr(2, 9);
-                    const isCurrentlyInViewport = isInViewport(element);
-                    const wasInViewport = animatedSections.get(elementId);
-                    
-                    if (isCurrentlyInViewport) {
-                        // Element is in viewport
-                        element.style.opacity = '1';
-                        element.style.transform = 'translateY(0)';
+                // First pass: find which section is most visible
+                sections.forEach(section => {
+                    if (isInViewport(section) && !foundActiveSection) {
+                        foundActiveSection = true;
                         
-                        // If this is the first time seeing this element or it was previously out of viewport
-                        if (wasInViewport === false || wasInViewport === undefined) {
-                            console.log('Resetting animations for', elementId);
+                        // If we have a new active section
+                        if (currentActiveSection !== section.id) {
+                            console.log('New active section:', section.id);
                             
-                            // Reset all SVG animations
-                            resetSvgAnimations(element);
+                            // Reset the previous active section if there was one
+                            if (currentActiveSection) {
+                                const prevSection = document.getElementById(currentActiveSection);
+                                if (prevSection) {
+                                    resetSvgAnimations(prevSection);
+                                }
+                            }
+                            
+                            // Set the new active section
+                            currentActiveSection = section.id;
+                            
+                            // Reset all other sections
+                            resetAllAnimationsExcept(currentActiveSection);
+                            
+                            // Make the current section visible
+                            section.style.opacity = '1';
+                            section.style.transform = 'translateY(0)';
+                            
+                            // Reset and start animations for this section
+                            resetSvgAnimations(section);
                             
                             // Animate SVG elements inside this section with a staggered delay
                             setTimeout(() => {
-                                const svgElements = element.querySelectorAll('svg [begin]');
+                                const svgElements = section.querySelectorAll('svg [begin]');
                                 svgElements.forEach((svgElement, index) => {
                                     setTimeout(() => {
                                         svgElement.style.opacity = '1';
@@ -2977,18 +3005,17 @@
                                 });
                             }, 100); // Small delay to ensure DOM is updated
                         }
-                        
-                        // Mark as in viewport
-                        animatedSections.set(elementId, true);
-                    } else {
-                        // Element is out of viewport
-                        element.style.opacity = '0';
-                        element.style.transform = 'translateY(20px)';
-                        
-                        // Mark as out of viewport
-                        animatedSections.set(elementId, false);
+                    } else if (!isInViewport(section)) {
+                        // Fade out sections that are not in viewport
+                        section.style.opacity = '0';
+                        section.style.transform = 'translateY(20px)';
                     }
                 });
+                
+                // If no section is active, clear the current active section
+                if (!foundActiveSection) {
+                    currentActiveSection = null;
+                }
             }
             
             // Initial check
