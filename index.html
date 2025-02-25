@@ -2986,29 +2986,37 @@
                 });
             }
             
-            // Function to resume SVG animations
-            function resumeSvgAnimations(element) {
+            // Function to restart SVG animations from the beginning
+            function restartSvgAnimations(element) {
+                // First, get all SVG elements
                 const svgElements = element.querySelectorAll('svg');
                 
                 svgElements.forEach(svg => {
-                    // Remove the paused class
-                    svg.classList.remove('paused-animations');
+                    // Create a fresh copy of the SVG to reset all animations
+                    const newSvg = svg.cloneNode(true);
                     
-                    // Find all animation elements
-                    const animations = svg.querySelectorAll('animate, animateTransform, animateMotion');
+                    // Remove the paused class if it exists
+                    newSvg.classList.remove('paused-animations');
                     
-                    // Resume each animation
-                    animations.forEach(animation => {
-                        if (animation.hasAttribute('data-paused')) {
-                            animation.removeAttribute('data-paused');
-                        }
-                    });
+                    // Replace the old SVG with the new one
+                    svg.parentNode.replaceChild(newSvg, svg);
                     
-                    // Make sure all animated elements are visible
-                    const animatedElements = svg.querySelectorAll('[begin]');
-                    animatedElements.forEach(el => {
-                        el.style.opacity = '1';
-                    });
+                    // Initialize animations
+                    setTimeout(() => {
+                        // Find all animation elements in the new SVG
+                        const animatedElements = newSvg.querySelectorAll('[begin]');
+                        
+                        // Make them visible with a staggered delay
+                        animatedElements.forEach((el, index) => {
+                            // Reset opacity to 0 first
+                            el.style.opacity = '0';
+                            
+                            // Then fade in with a delay
+                            setTimeout(() => {
+                                el.style.opacity = '1';
+                            }, index * 100);
+                        });
+                    }, 50); // Small delay to ensure DOM is updated
                 });
             }
             
@@ -3049,8 +3057,8 @@
                             // Pause all other sections
                             pauseAllAnimationsExcept(currentActiveSection);
                             
-                            // Resume animations for this section
-                            resumeSvgAnimations(section);
+                            // Restart animations for this section from the beginning
+                            restartSvgAnimations(section);
                         }
                     }
                 });
