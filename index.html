@@ -1,0 +1,2908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little App of Deep Learning</title>
+    <!-- HTMX for content updates -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <!-- Google Fonts - Lexend Deca -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Lexend Deca', sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;            
+        }
+
+        section {
+            margin-bottom: 4rem;
+        }
+
+        .visualization {
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* SVG Styles */
+        svg {
+            overflow: visible;
+        }
+
+        .axis {
+            stroke: rgba(255, 255, 255, 0.5);
+            stroke-width: 1;
+        }
+
+        .axis-label {
+            fill: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .data-point {
+            fill: #4e79a7;
+        }
+
+        .model-line {
+            fill: none;
+            stroke: #f28e2c;
+            stroke-width: 2;
+        }
+
+        /* Basis Function Styles */
+        .basis-function {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 3,3;
+        }
+
+        .basis-function-1 {
+            stroke: #4e79a7;
+        }
+
+        .basis-function-2 {
+            stroke: #f28e2c;
+        }
+
+        .basis-function-3 {
+            stroke: #e15759;
+        }
+
+        .weighted-sum {
+            fill: none;
+            stroke: #76b7b2;
+            stroke-width: 3;
+        }
+
+        /* Under/Overfitting Styles */
+        .data-point-small {
+            fill: rgba(255, 255, 255, 0.7);
+            r: 3;
+        }
+
+        .underfit {
+            fill: none;
+            stroke: #59a14f;
+            stroke-width: 2;
+        }
+
+        .overfit {
+            fill: none;
+            stroke: #e15759;
+            stroke-width: 2;
+        }
+
+        .optimal {
+            fill: none;
+            stroke: #76b7b2;
+            stroke-width: 2.5;
+        }
+
+        .fit-label {
+            font-size: 14px;
+            text-anchor: middle;
+        }
+
+        /* Hardware Styles */
+        .hardware-unit {
+            stroke: rgba(255, 255, 255, 0.7);
+            stroke-width: 2;
+            fill: rgba(78, 121, 167, 0.3);
+        }
+
+        .hardware-label {
+            font-size: 14px;
+            text-anchor: middle;
+            fill: white;
+        }
+
+        .batch-item {
+            r: 5;
+        }
+
+        .batch-item-gpu {
+            fill: #f28e2c;
+        }
+
+        .batch-item-tpu {
+            fill: #e15759;
+        }
+
+        /* Tensor Styles */
+        .tensor-cell {
+            stroke: rgba(255, 255, 255, 0.5);
+            stroke-width: 1;
+        }
+
+        .tensor-1d {
+            fill: rgba(78, 121, 167, 0.5);
+        }
+
+        .tensor-2d {
+            fill: rgba(242, 142, 44, 0.5);
+        }
+
+        .tensor-3d {
+            fill: rgba(225, 87, 89, 0.5);
+        }
+
+        .tensor-operation {
+            font-size: 16px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        /* Loss Function Styles */
+        .loss-curve {
+            fill: none;
+            stroke: #76b7b2;
+            stroke-width: 2;
+        }
+
+        .loss-point {
+            fill: #f28e2c;
+            r: 5;
+        }
+
+        .loss-axis {
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+        }
+
+        .loss-label {
+            font-size: 12px;
+            fill: rgba(255, 255, 255, 0.7);
+        }
+
+        .loss-value {
+            font-size: 14px;
+            fill: #f28e2c;
+            text-anchor: middle;
+        }
+
+        /* Autoregressive Model Styles */
+        .token-box {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.7);
+            stroke-width: 1;
+            rx: 4;
+            ry: 4;
+        }
+
+        .token-text {
+            font-size: 14px;
+            fill: white;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .token-arrow {
+            stroke: rgba(255, 255, 255, 0.6);
+            stroke-width: 1.5;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+
+        /* Gradient Descent Styles */
+        .contour {
+            fill: none;
+            stroke-width: 1;
+        }
+
+        .contour-1 {
+            stroke: rgba(78, 121, 167, 0.3);
+        }
+
+        .contour-2 {
+            stroke: rgba(78, 121, 167, 0.5);
+        }
+
+        .contour-3 {
+            stroke: rgba(78, 121, 167, 0.7);
+        }
+
+        .gradient-marker {
+            fill: #f28e2c;
+            r: 6;
+        }
+
+        .gradient-arrow {
+            stroke: #e15759;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#gradient-arrowhead);
+        }
+
+        .gradient-text {
+            font-size: 12px;
+            fill: rgba(255, 255, 255, 0.8);
+            text-anchor: middle;
+        }
+
+        /* Backpropagation Styles */
+        .network-layer {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.7);
+            stroke-width: 1;
+            rx: 5;
+            ry: 5;
+        }
+
+        .network-node {
+            r: 8;
+        }
+
+        .node-input {
+            fill: #4e79a7;
+        }
+
+        .node-hidden {
+            fill: #f28e2c;
+        }
+
+        .node-output {
+            fill: #e15759;
+        }
+
+        .forward-connection {
+            stroke: rgba(255, 255, 255, 0.4);
+            stroke-width: 1;
+        }
+
+        .backward-connection {
+            stroke: #e15759;
+            stroke-width: 2;
+            stroke-dasharray: 4,2;
+        }
+
+        .layer-label {
+            font-size: 12px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        /* Depth Value Styles */
+        .depth-layer {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.7);
+            stroke-width: 1;
+        }
+
+        .depth-connection {
+            stroke: rgba(255, 255, 255, 0.4);
+            stroke-width: 1;
+        }
+
+        .depth-node {
+            r: 4;
+        }
+
+        .depth-feature {
+            font-size: 10px;
+            fill: rgba(255, 255, 255, 0.8);
+            text-anchor: middle;
+        }
+
+        .complexity-label {
+            font-size: 12px;
+            fill: rgba(255, 255, 255, 0.8);
+            text-anchor: start;
+        }
+
+        /* Layer Notion Styles */
+        .layer-box {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.7);
+            stroke-width: 1.5;
+            rx: 5;
+            ry: 5;
+        }
+
+        .layer-arrow {
+            stroke: rgba(255, 255, 255, 0.6);
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#layer-arrowhead);
+        }
+
+        .layer-data {
+            fill: #f28e2c;
+            r: 5;
+        }
+
+        .layer-title {
+            font-size: 14px;
+            fill: white;
+            text-anchor: middle;
+            font-weight: 500;
+        }
+
+        .layer-description {
+            font-size: 11px;
+            fill: rgba(255, 255, 255, 0.8);
+            text-anchor: middle;
+        }
+
+        /* Linear Layer Styles */
+        .linear-node {
+            r: 6;
+        }
+
+        .linear-connection {
+            stroke-width: 1.5;
+        }
+
+        .weight-label {
+            font-size: 10px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .matrix-cell {
+            width: 25px;
+            height: 25px;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+        }
+
+        .matrix-text {
+            font-size: 10px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: white;
+        }
+
+        .equation-text {
+            font-size: 14px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        /* Activation Function Styles */
+        .activation-path {
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .sigmoid {
+            stroke: #4e79a7;
+        }
+
+        .relu {
+            stroke: #f28e2c;
+        }
+
+        .tanh {
+            stroke: #e15759;
+        }
+
+        .activation-axis {
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+        }
+
+        .activation-label {
+            font-size: 12px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        .activation-point {
+            r: 4;
+        }
+
+        .activation-arrow {
+            stroke: white;
+            stroke-width: 1.5;
+            fill: none;
+            marker-end: url(#activation-arrowhead);
+        }
+
+        /* Pooling Styles */
+        .grid-cell {
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+        }
+
+        .input-cell {
+            fill: rgba(78, 121, 167, 0.3);
+        }
+
+        .pooling-window {
+            fill: none;
+            stroke: #f28e2c;
+            stroke-width: 2;
+            stroke-dasharray: 4,2;
+        }
+
+        .output-cell {
+            fill: rgba(242, 142, 44, 0.5);
+        }
+
+        .cell-value {
+            font-size: 10px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: white;
+        }
+
+        .pooling-label {
+            font-size: 12px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        .pooling-arrow {
+            stroke: white;
+            stroke-width: 1.5;
+            fill: none;
+            marker-end: url(#pooling-arrowhead);
+        }
+
+        /* Dropout Styles */
+        .dropout-node {
+            r: 8;
+        }
+
+        .dropout-node-active {
+            fill: #4e79a7;
+        }
+
+        .dropout-node-inactive {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.5);
+            stroke-width: 1;
+            stroke-dasharray: 2,2;
+        }
+
+        .dropout-connection {
+            stroke: rgba(255, 255, 255, 0.4);
+            stroke-width: 1.5;
+        }
+
+        .dropout-connection-inactive {
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 1;
+            stroke-dasharray: 2,2;
+        }
+
+        .dropout-label {
+            font-size: 12px;
+            fill: white;
+            text-anchor: middle;
+        }
+
+        .dropout-probability {
+            font-size: 14px;
+            fill: #f28e2c;
+            text-anchor: middle;
+        }
+
+        /* Attention Styles */
+        .token-rect {
+            fill: rgba(78, 121, 167, 0.2);
+            stroke: rgba(78, 121, 167, 0.7);
+            stroke-width: 1;
+            rx: 4;
+            ry: 4;
+        }
+
+        .token-text {
+            font-size: 14px;
+            fill: white;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .attention-cell {
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 0.5;
+        }
+
+        .attention-value-low {
+            fill: rgba(78, 121, 167, 0.1);
+        }
+
+        .attention-value-medium {
+            fill: rgba(78, 121, 167, 0.4);
+        }
+
+        .attention-value-high {
+            fill: rgba(78, 121, 167, 0.8);
+        }
+
+        .attention-line {
+            stroke: #f28e2c;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .attention-label {
+            font-size: 12px;
+            fill: white;
+            text-anchor: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Little App of Deep Learning</h1>
+
+        <!-- 1. Foundations - Machine Learning -->
+        <section id="learning-from-data">
+            <h2>Learning from Data</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Coordinate System -->
+                <line class="axis" x1="50" y1="250" x2="350" y2="250"></line>
+                <line class="axis" x1="50" y1="50" x2="50" y2="250"></line>
+                <text class="axis-label" x="200" y="280">Input</text>
+                <text class="axis-label" x="20" y="150" transform="rotate(-90, 20, 150)">Output</text>
+                
+                <!-- Data Points -->
+                <circle class="data-point" cx="80" cy="200" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="120" cy="180" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.2s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="160" cy="150" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.4s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="200" cy="130" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.6s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="240" cy="110" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.8s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="280" cy="90" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.0s" fill="freeze" />
+                </circle>
+                <circle class="data-point" cx="320" cy="70" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.2s" fill="freeze" />
+                </circle>
+                
+                <!-- Model Line (Poor Fit) -->
+                <path class="model-line" d="M 50 220 L 350 180">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="1.5s" fill="freeze" />
+                </path>
+                
+                <!-- Model Line (Better Fit) -->
+                <path class="model-line" d="M 50 220 L 350 100">
+                    <animate attributeName="opacity" from="0" to="0.7" dur="1s" begin="3s" fill="freeze" />
+                    <animate attributeName="d" from="M 50 220 L 350 180" to="M 50 220 L 350 100" dur="2s" begin="3s" fill="freeze" />
+                </path>
+                
+                <!-- Model Line (Best Fit) -->
+                <path class="model-line" d="M 50 230 Q 200 120 350 70">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5.5s" fill="freeze" />
+                    <animate attributeName="d" from="M 50 220 L 350 100" to="M 50 230 Q 200 120 350 70" dur="2s" begin="5.5s" fill="freeze" />
+                </path>
+            </svg>
+        </section>
+
+        <!-- Basis Function Regression -->
+        <section id="basis-function-regression">
+            <h2>Basis Function Regression</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Coordinate System -->
+                <line class="axis" x1="50" y1="250" x2="350" y2="250"></line>
+                <line class="axis" x1="50" y1="50" x2="50" y2="250"></line>
+                <text class="axis-label" x="200" y="280">Input</text>
+                <text class="axis-label" x="20" y="150" transform="rotate(-90, 20, 150)">Output</text>
+                
+                <!-- Basis Function 1: Sine Wave -->
+                <path class="basis-function basis-function-1" d="M 50 150 Q 125 50 200 150 Q 275 250 350 150">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="0s" fill="freeze" />
+                    <animate attributeName="stroke-width" values="2;4;2" dur="3s" begin="3s" repeatCount="1" />
+                </path>
+                
+                <!-- Basis Function 2: Linear -->
+                <path class="basis-function basis-function-2" d="M 50 200 L 350 100">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="1s" fill="freeze" />
+                    <animate attributeName="stroke-width" values="2;4;2" dur="3s" begin="4s" repeatCount="1" />
+                </path>
+                
+                <!-- Basis Function 3: Gaussian-like -->
+                <path class="basis-function basis-function-3" d="M 50 250 Q 125 250 150 150 Q 175 50 200 50 Q 225 50 250 150 Q 275 250 350 250">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="2s" fill="freeze" />
+                    <animate attributeName="stroke-width" values="2;4;2" dur="3s" begin="5s" repeatCount="1" />
+                </path>
+                
+                <!-- Weighted Sum (Final Model) -->
+                <path class="weighted-sum" d="M 50 250 Q 100 200 150 150 Q 200 100 250 100 Q 300 150 350 200">
+                    <animate attributeName="opacity" from="0" to="0.3" dur="0.5s" begin="6s" fill="freeze" />
+                    <animate attributeName="opacity" from="0.3" to="1" dur="1s" begin="7s" fill="freeze" />
+                    <animate attributeName="d" 
+                             from="M 50 250 L 350 250" 
+                             to="M 50 250 Q 100 200 150 150 Q 200 100 250 100 Q 300 150 350 200" 
+                             dur="3s" 
+                             begin="7s" 
+                             fill="freeze" />
+                </path>
+                
+                <!-- Weight Labels -->
+                <text class="axis-label" x="60" y="70" fill="#4e79a7" opacity="0">
+                    w₁ = 0.3
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="3s" fill="freeze" />
+                </text>
+                <text class="axis-label" x="180" y="70" fill="#f28e2c" opacity="0">
+                    w₂ = 0.5
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="4s" fill="freeze" />
+                </text>
+                <text class="axis-label" x="300" y="70" fill="#e15759" opacity="0">
+                    w₃ = 0.2
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5s" fill="freeze" />
+                </text>
+            </svg>
+        </section>
+
+        <!-- Under and Overfitting -->
+        <section id="under-overfitting">
+            <h2>Under and Overfitting</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Left Graph (Underfitting) -->
+                <g transform="translate(0, 0)">
+                    <!-- Coordinate System -->
+                    <rect x="30" y="50" width="150" height="200" fill="none" stroke="rgba(255,255,255,0.1)" />
+                    <line class="axis" x1="30" y1="250" x2="180" y2="250"></line>
+                    <line class="axis" x1="30" y1="50" x2="30" y2="250"></line>
+                    
+                    <!-- Data Points -->
+                    <circle class="data-point-small" cx="50" cy="200"></circle>
+                    <circle class="data-point-small" cx="70" cy="170"></circle>
+                    <circle class="data-point-small" cx="90" cy="190"></circle>
+                    <circle class="data-point-small" cx="110" cy="130"></circle>
+                    <circle class="data-point-small" cx="130" cy="110"></circle>
+                    <circle class="data-point-small" cx="150" cy="90"></circle>
+                    <circle class="data-point-small" cx="170" cy="70"></circle>
+                    
+                    <!-- Underfitting Line -->
+                    <path class="underfit" d="M 30 220 L 180 80">
+                        <animate attributeName="opacity" from="0" to="1" dur="1s" begin="0.5s" fill="freeze" />
+                    </path>
+                    
+                    <text class="fit-label" x="105" y="30" fill="#59a14f" opacity="0">
+                        Underfitting
+                        <animate attributeName="opacity" from="0" to="1" dur="1s" begin="1s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Right Graph (Overfitting) -->
+                <g transform="translate(220, 0)">
+                    <!-- Coordinate System -->
+                    <rect x="30" y="50" width="150" height="200" fill="none" stroke="rgba(255,255,255,0.1)" />
+                    <line class="axis" x1="30" y1="250" x2="180" y2="250"></line>
+                    <line class="axis" x1="30" y1="50" x2="30" y2="250"></line>
+                    
+                    <!-- Data Points (Same as left graph) -->
+                    <circle class="data-point-small" cx="50" cy="200"></circle>
+                    <circle class="data-point-small" cx="70" cy="170"></circle>
+                    <circle class="data-point-small" cx="90" cy="190"></circle>
+                    <circle class="data-point-small" cx="110" cy="130"></circle>
+                    <circle class="data-point-small" cx="130" cy="110"></circle>
+                    <circle class="data-point-small" cx="150" cy="90"></circle>
+                    <circle class="data-point-small" cx="170" cy="70"></circle>
+                    
+                    <!-- Overfitting Curve -->
+                    <path class="overfit" d="M 30 200 C 40 210 45 160 50 200 C 60 240 65 150 70 170 C 75 190 85 210 90 190 C 95 170 105 110 110 130 C 115 150 125 90 130 110 C 140 130 145 70 150 90 C 160 110 170 50 180 70">
+                        <animate attributeName="opacity" from="0" to="1" dur="1s" begin="2s" fill="freeze" />
+                    </path>
+                    
+                    <text class="fit-label" x="105" y="30" fill="#e15759" opacity="0">
+                        Overfitting
+                        <animate attributeName="opacity" from="0" to="1" dur="1s" begin="2.5s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Center Optimal Fit (appears after both under and over) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1.5s" begin="4s" fill="freeze" />
+                    
+                    <!-- Coordinate System -->
+                    <rect x="140" y="50" width="120" height="200" fill="none" stroke="rgba(255,255,255,0.2)" />
+                    
+                    <!-- Data Points -->
+                    <circle class="data-point-small" cx="150" cy="200"></circle>
+                    <circle class="data-point-small" cx="170" cy="170"></circle>
+                    <circle class="data-point-small" cx="190" cy="190"></circle>
+                    <circle class="data-point-small" cx="210" cy="130"></circle>
+                    <circle class="data-point-small" cx="230" cy="110"></circle>
+                    <circle class="data-point-small" cx="250" cy="90"></circle>
+                    
+                    <!-- Optimal Fit -->
+                    <path class="optimal" d="M 140 210 Q 195 150 260 80"></path>
+                    
+                    <text class="fit-label" x="200" y="30" fill="#76b7b2">
+                        Optimal Fit
+                    </text>
+                </g>
+                
+                <!-- Morphing Animation -->
+                <path class="underfit" d="M 30 220 L 180 80" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    <animate attributeName="d" 
+                             from="M 30 220 L 180 80" 
+                             to="M 30 200 C 40 210 45 160 50 200 C 60 240 65 150 70 170 C 75 190 85 210 90 190 C 95 170 105 110 110 130 C 115 150 125 90 130 110 C 140 130 145 70 150 90 C 160 110 170 50 180 70" 
+                             dur="3s" 
+                             begin="6.5s" 
+                             fill="freeze" />
+                    <animate attributeName="stroke" 
+                             from="#59a14f" 
+                             to="#e15759" 
+                             dur="3s" 
+                             begin="6.5s" 
+                             fill="freeze" />
+                </path>
+            </svg>
+        </section>
+
+        <!-- GPUs, TPUs, and Batches -->
+        <section id="hardware-acceleration">
+            <h2>GPUs, TPUs, and Batches</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- CPU (for comparison) -->
+                <rect class="hardware-unit" x="50" y="50" width="60" height="60" rx="5">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze" />
+                </rect>
+                <text class="hardware-label" x="80" y="80">CPU</text>
+                
+                <!-- GPU -->
+                <rect class="hardware-unit" x="170" y="50" width="60" height="60" rx="5">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                </rect>
+                <text class="hardware-label" x="200" y="80">GPU</text>
+                
+                <!-- TPU -->
+                <rect class="hardware-unit" x="290" y="50" width="60" height="60" rx="5">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1s" fill="freeze" />
+                </rect>
+                <text class="hardware-label" x="320" y="80">TPU</text>
+                
+                <!-- Batch Items for GPU -->
+                <g id="gpu-batch">
+                    <!-- Source of batch items -->
+                    <text class="hardware-label" x="80" y="170">Data Batch</text>
+                    
+                    <!-- Batch items -->
+                    <circle class="batch-item batch-item-gpu" cx="50" cy="200">
+                        <animate attributeName="cx" from="50" to="200" dur="1s" begin="2s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="2s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-gpu" cx="60" cy="200">
+                        <animate attributeName="cx" from="60" to="200" dur="1s" begin="2.2s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="2.2s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-gpu" cx="70" cy="200">
+                        <animate attributeName="cx" from="70" to="200" dur="1s" begin="2.4s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="2.4s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-gpu" cx="80" cy="200">
+                        <animate attributeName="cx" from="80" to="200" dur="1s" begin="2.6s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="2.6s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-gpu" cx="90" cy="200">
+                        <animate attributeName="cx" from="90" to="200" dur="1s" begin="2.8s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="2.8s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-gpu" cx="100" cy="200">
+                        <animate attributeName="cx" from="100" to="200" dur="1s" begin="3.0s" fill="freeze" />
+                        <animate attributeName="cy" from="200" to="80" dur="1s" begin="3.0s" fill="freeze" />
+                    </circle>
+                </g>
+                
+                <!-- Batch Items for TPU -->
+                <g id="tpu-batch">
+                    <!-- Batch items -->
+                    <circle class="batch-item batch-item-tpu" cx="50" cy="230">
+                        <animate attributeName="cx" from="50" to="320" dur="0.8s" begin="4s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="60" cy="230">
+                        <animate attributeName="cx" from="60" to="320" dur="0.8s" begin="4.1s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.1s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="70" cy="230">
+                        <animate attributeName="cx" from="70" to="320" dur="0.8s" begin="4.2s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.2s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="80" cy="230">
+                        <animate attributeName="cx" from="80" to="320" dur="0.8s" begin="4.3s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.3s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="90" cy="230">
+                        <animate attributeName="cx" from="90" to="320" dur="0.8s" begin="4.4s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.4s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="100" cy="230">
+                        <animate attributeName="cx" from="100" to="320" dur="0.8s" begin="4.5s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.5s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="110" cy="230">
+                        <animate attributeName="cx" from="110" to="320" dur="0.8s" begin="4.6s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.6s" fill="freeze" />
+                    </circle>
+                    <circle class="batch-item batch-item-tpu" cx="120" cy="230">
+                        <animate attributeName="cx" from="120" to="320" dur="0.8s" begin="4.7s" fill="freeze" />
+                        <animate attributeName="cy" from="230" to="80" dur="0.8s" begin="4.7s" fill="freeze" />
+                    </circle>
+                </g>
+                
+                <!-- Processing Speed Comparison -->
+                <text class="hardware-label" x="200" y="270" opacity="0">
+                    TPUs process larger batches faster
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5.5s" fill="freeze" />
+                </text>
+            </svg>
+        </section>
+
+        <!-- Tensors -->
+        <section id="tensors">
+            <h2>Tensors</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- 1D Tensor (Vector) -->
+                <g id="tensor-1d" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="0s" fill="freeze" />
+                    
+                    <rect class="tensor-cell tensor-1d" x="50" y="50" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-1d" x="80" y="50" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-1d" x="110" y="50" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-1d" x="140" y="50" width="30" height="30"></rect>
+                    
+                    <text class="tensor-operation" x="110" y="100">1D Tensor (Vector)</text>
+                </g>
+                
+                <!-- 2D Tensor (Matrix) -->
+                <g id="tensor-2d" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="2s" fill="freeze" />
+                    
+                    <rect class="tensor-cell tensor-2d" x="230" y="50" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="260" y="50" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="290" y="50" width="30" height="30"></rect>
+                    
+                    <rect class="tensor-cell tensor-2d" x="230" y="80" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="260" y="80" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="290" y="80" width="30" height="30"></rect>
+                    
+                    <rect class="tensor-cell tensor-2d" x="230" y="110" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="260" y="110" width="30" height="30"></rect>
+                    <rect class="tensor-cell tensor-2d" x="290" y="110" width="30" height="30"></rect>
+                    
+                    <text class="tensor-operation" x="260" y="160">2D Tensor (Matrix)</text>
+                </g>
+                
+                <!-- 3D Tensor -->
+                <g id="tensor-3d" transform="translate(140, 180)" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="4s" fill="freeze" />
+                    
+                    <!-- Front layer -->
+                    <rect class="tensor-cell tensor-3d" x="0" y="0" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="25" y="0" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="0" y="25" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="25" y="25" width="25" height="25"></rect>
+                    
+                    <!-- Middle layer -->
+                    <rect class="tensor-cell tensor-3d" x="10" y="-10" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="35" y="-10" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="10" y="15" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="35" y="15" width="25" height="25"></rect>
+                    
+                    <!-- Back layer -->
+                    <rect class="tensor-cell tensor-3d" x="20" y="-20" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="45" y="-20" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="20" y="5" width="25" height="25"></rect>
+                    <rect class="tensor-cell tensor-3d" x="45" y="5" width="25" height="25"></rect>
+                    
+                    <text class="tensor-operation" x="35" y="70">3D Tensor</text>
+                </g>
+                
+                <!-- Tensor Operations -->
+                <g id="tensor-operations" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="6s" fill="freeze" />
+                    
+                    <!-- Slicing Operation -->
+                    <g transform="translate(50, 200)">
+                        <!-- Original 2D tensor -->
+                        <rect class="tensor-cell tensor-2d" x="0" y="0" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="15" y="0" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="30" y="0" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="0" y="15" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="15" y="15" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="30" y="15" width="15" height="15"></rect>
+                        
+                        <!-- Slicing animation -->
+                        <rect class="tensor-cell" x="15" y="0" width="15" height="15" stroke="white" stroke-width="2" fill="none">
+                            <animate attributeName="stroke-width" values="2;4;2" dur="2s" begin="7s" repeatCount="1" />
+                        </rect>
+                        
+                        <!-- Sliced result -->
+                        <rect class="tensor-cell tensor-2d" x="60" y="7.5" width="15" height="15" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="8s" fill="freeze" />
+                        </rect>
+                        
+                        <text class="tensor-operation" x="40" y="40" font-size="12">Slicing</text>
+                    </g>
+                    
+                    <!-- Reshaping Operation -->
+                    <g transform="translate(250, 200)">
+                        <!-- Original 2D tensor -->
+                        <rect class="tensor-cell tensor-2d" x="0" y="0" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="15" y="0" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="0" y="15" width="15" height="15"></rect>
+                        <rect class="tensor-cell tensor-2d" x="15" y="15" width="15" height="15"></rect>
+                        
+                        <!-- Arrow -->
+                        <text x="40" y="15" font-size="16">→</text>
+                        
+                        <!-- Reshaped result -->
+                        <rect class="tensor-cell tensor-2d" x="60" y="7.5" width="15" height="15" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="9s" fill="freeze" />
+                        </rect>
+                        <rect class="tensor-cell tensor-2d" x="75" y="7.5" width="15" height="15" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="9.2s" fill="freeze" />
+                        </rect>
+                        <rect class="tensor-cell tensor-2d" x="90" y="7.5" width="15" height="15" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="9.4s" fill="freeze" />
+                        </rect>
+                        <rect class="tensor-cell tensor-2d" x="105" y="7.5" width="15" height="15" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="9.6s" fill="freeze" />
+                        </rect>
+                        
+                        <text class="tensor-operation" x="50" y="40" font-size="12">Reshaping</text>
+                    </g>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Losses -->
+        <section id="losses">
+            <h2>Losses</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Coordinate System -->
+                <line class="loss-axis" x1="50" y1="250" x2="350" y2="250"></line>
+                <line class="loss-axis" x1="50" y1="50" x2="50" y2="250"></line>
+                
+                <!-- Axis Labels -->
+                <text class="loss-label" x="200" y="280">Training Steps</text>
+                <text class="loss-label" x="20" y="150" transform="rotate(-90, 20, 150)">Loss Value</text>
+                
+                <!-- Loss Curve -->
+                <path class="loss-curve" d="M 50 200 C 80 190 100 150 130 140 C 160 130 180 120 200 100 C 220 80 240 70 260 65 C 280 60 300 58 350 55">
+                    <animate attributeName="stroke-dasharray" from="500" to="0" dur="3s" begin="0.5s" fill="freeze" />
+                </path>
+                
+                <!-- Loss Point (moving along the curve) -->
+                <circle class="loss-point" cx="50" cy="200" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    <animate attributeName="cx" from="50" to="130" dur="1s" begin="4s" fill="freeze" />
+                    <animate attributeName="cy" from="200" to="140" dur="1s" begin="4s" fill="freeze" />
+                    <animate attributeName="cx" from="130" to="200" dur="1s" begin="5s" fill="freeze" />
+                    <animate attributeName="cy" from="140" to="100" dur="1s" begin="5s" fill="freeze" />
+                    <animate attributeName="cx" from="200" to="260" dur="1s" begin="6s" fill="freeze" />
+                    <animate attributeName="cy" from="100" to="65" dur="1s" begin="6s" fill="freeze" />
+                    <animate attributeName="cx" from="260" to="350" dur="1s" begin="7s" fill="freeze" />
+                    <animate attributeName="cy" from="65" to="55" dur="1s" begin="7s" fill="freeze" />
+                </circle>
+                
+                <!-- Loss Value Display -->
+                <text class="loss-value" x="200" y="30" opacity="0">
+                    Loss: 2.45
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    <animate attributeName="textContent" from="Loss: 2.45" to="Loss: 1.82" dur="0.1s" begin="4s" fill="freeze" />
+                    <animate attributeName="textContent" from="Loss: 1.82" to="Loss: 1.24" dur="0.1s" begin="5s" fill="freeze" />
+                    <animate attributeName="textContent" from="Loss: 1.24" to="Loss: 0.78" dur="0.1s" begin="6s" fill="freeze" />
+                    <animate attributeName="textContent" from="Loss: 0.78" to="Loss: 0.42" dur="0.1s" begin="7s" fill="freeze" />
+                </text>
+                
+                <!-- Epoch Markers -->
+                <line class="loss-axis" x1="130" y1="250" x2="130" y2="245" stroke-width="2"></line>
+                <text class="loss-label" x="130" y="265" text-anchor="middle">Epoch 1</text>
+                
+                <line class="loss-axis" x1="200" y1="250" x2="200" y2="245" stroke-width="2"></line>
+                <text class="loss-label" x="200" y="265" text-anchor="middle">Epoch 2</text>
+                
+                <line class="loss-axis" x1="260" y1="250" x2="260" y2="245" stroke-width="2"></line>
+                <text class="loss-label" x="260" y="265" text-anchor="middle">Epoch 3</text>
+            </svg>
+        </section>
+
+        <!-- Autoregressive Models -->
+        <section id="autoregressive-models">
+            <h2>Autoregressive Models</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Arrow Marker Definition -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 255, 255, 0.6)" />
+                    </marker>
+                </defs>
+                
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Sequential Token Generation</text>
+                
+                <!-- First Token -->
+                <rect class="token-box" x="50" y="100" width="60" height="40" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                </rect>
+                <text class="token-text" x="80" y="120" opacity="0">
+                    The
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.8s" fill="freeze" />
+                </text>
+                
+                <!-- Arrow 1 -->
+                <path class="token-arrow" d="M 120 120 L 150 120" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.3s" fill="freeze" />
+                </path>
+                
+                <!-- Second Token -->
+                <rect class="token-box" x="160" y="100" width="60" height="40" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.8s" fill="freeze" />
+                </rect>
+                <text class="token-text" x="190" y="120" opacity="0">
+                    cat
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.1s" fill="freeze" />
+                </text>
+                
+                <!-- Arrow 2 -->
+                <path class="token-arrow" d="M 230 120 L 260 120" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.6s" fill="freeze" />
+                </path>
+                
+                <!-- Third Token -->
+                <rect class="token-box" x="270" y="100" width="60" height="40" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.1s" fill="freeze" />
+                </rect>
+                <text class="token-text" x="300" y="120" opacity="0">
+                    sat
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.4s" fill="freeze" />
+                </text>
+                
+                <!-- Feedback Arrows -->
+                <path class="token-arrow" d="M 80 150 C 80 180 190 180 190 150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                </path>
+                <path class="token-arrow" d="M 190 150 C 190 180 300 180 300 150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                </path>
+                
+                <!-- Next Sequence -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    
+                    <!-- First Token -->
+                    <rect class="token-box" x="50" y="220" width="60" height="40"></rect>
+                    <text class="token-text" x="80" y="240">The</text>
+                    
+                    <!-- Second Token -->
+                    <rect class="token-box" x="120" y="220" width="60" height="40"></rect>
+                    <text class="token-text" x="150" y="240">cat</text>
+                    
+                    <!-- Third Token -->
+                    <rect class="token-box" x="190" y="220" width="60" height="40"></rect>
+                    <text class="token-text" x="220" y="240">sat</text>
+                    
+                    <!-- Fourth Token (appearing) -->
+                    <rect class="token-box" x="260" y="220" width="60" height="40" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.5s" fill="freeze" />
+                    </rect>
+                    <text class="token-text" x="290" y="240" opacity="0">
+                        on
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Fifth Token (appearing) -->
+                    <rect class="token-box" x="330" y="220" width="60" height="40" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.5s" fill="freeze" />
+                    </rect>
+                    <text class="token-text" x="360" y="240" opacity="0">
+                        the
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="7s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Explanation -->
+                <text class="loss-label" x="200" y="70" text-anchor="middle" opacity="0">
+                    Each token is generated based on previous tokens
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7.5s" fill="freeze" />
+                </text>
+            </svg>
+        </section>
+
+        <!-- Gradient Descent -->
+        <section id="gradient-descent">
+            <h2>Gradient Descent</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Arrow Marker Definition -->
+                <defs>
+                    <marker id="gradient-arrowhead" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#e15759" />
+                    </marker>
+                </defs>
+                
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Optimization in Loss Landscape</text>
+                
+                <!-- Loss Landscape (Contour Lines) -->
+                <ellipse class="contour contour-1" cx="200" cy="150" rx="150" ry="100"></ellipse>
+                <ellipse class="contour contour-2" cx="200" cy="150" rx="100" ry="70"></ellipse>
+                <ellipse class="contour contour-3" cx="200" cy="150" rx="50" ry="35"></ellipse>
+                
+                <!-- Minimum Point -->
+                <circle cx="200" cy="150" r="3" fill="white"></circle>
+                <text class="gradient-text" x="200" y="140">Global Minimum</text>
+                
+                <!-- Gradient Descent Path -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1s" fill="freeze" />
+                    
+                    <!-- Starting Point -->
+                    <circle class="gradient-marker" cx="320" cy="200">
+                        <animate attributeName="r" values="6;8;6" dur="1s" begin="1.5s" repeatCount="1" />
+                    </circle>
+                    <text class="gradient-text" x="320" y="220">Start</text>
+                    
+                    <!-- Step 1 -->
+                    <path class="gradient-arrow" d="M 320 200 L 280 180" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                    </path>
+                    <circle class="gradient-marker" cx="280" cy="180" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.5s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Step 2 -->
+                    <path class="gradient-arrow" d="M 280 180 L 240 165" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                    </path>
+                    <circle class="gradient-marker" cx="240" cy="165" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Step 3 -->
+                    <path class="gradient-arrow" d="M 240 165 L 215 155" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </path>
+                    <circle class="gradient-marker" cx="215" cy="155" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Step 4 (Final) -->
+                    <path class="gradient-arrow" d="M 215 155 L 200 150" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </path>
+                </g>
+                
+                <!-- Learning Rate Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="6s" fill="freeze" />
+                    
+                    <text class="gradient-text" x="100" y="70">Large Learning Rate</text>
+                    <path class="gradient-arrow" d="M 100 80 L 100 110" stroke-dasharray="5,2"></path>
+                    
+                    <text class="gradient-text" x="300" y="70">Small Learning Rate</text>
+                    <path class="gradient-arrow" d="M 300 80 L 300 95" stroke-dasharray="5,2"></path>
+                </g>
+                
+                <!-- Explanation -->
+                <text class="loss-label" x="200" y="270" text-anchor="middle" opacity="0">
+                    Gradient descent follows the steepest path downhill
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="6.5s" fill="freeze" />
+                </text>
+            </svg>
+        </section>
+
+        <!-- Backpropagation -->
+        <section id="backpropagation">
+            <h2>Backpropagation</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Error Propagation Through Network</text>
+                
+                <!-- Network Layers -->
+                <rect class="network-layer" x="50" y="70" width="60" height="160"></rect>
+                <rect class="network-layer" x="170" y="70" width="60" height="160"></rect>
+                <rect class="network-layer" x="290" y="70" width="60" height="160"></rect>
+                
+                <!-- Layer Labels -->
+                <text class="layer-label" x="80" y="250">Input Layer</text>
+                <text class="layer-label" x="200" y="250">Hidden Layer</text>
+                <text class="layer-label" x="320" y="250">Output Layer</text>
+                
+                <!-- Input Nodes -->
+                <circle class="network-node node-input" cx="80" cy="100"></circle>
+                <circle class="network-node node-input" cx="80" cy="150"></circle>
+                <circle class="network-node node-input" cx="80" cy="200"></circle>
+                
+                <!-- Hidden Nodes -->
+                <circle class="network-node node-hidden" cx="200" cy="100"></circle>
+                <circle class="network-node node-hidden" cx="200" cy="150"></circle>
+                <circle class="network-node node-hidden" cx="200" cy="200"></circle>
+                
+                <!-- Output Nodes -->
+                <circle class="network-node node-output" cx="320" cy="125"></circle>
+                <circle class="network-node node-output" cx="320" cy="175"></circle>
+                
+                <!-- Forward Connections (Input to Hidden) -->
+                <line class="forward-connection" x1="88" y1="100" x2="192" y2="100"></line>
+                <line class="forward-connection" x1="88" y1="100" x2="192" y2="150"></line>
+                <line class="forward-connection" x1="88" y1="100" x2="192" y2="200"></line>
+                
+                <line class="forward-connection" x1="88" y1="150" x2="192" y2="100"></line>
+                <line class="forward-connection" x1="88" y1="150" x2="192" y2="150"></line>
+                <line class="forward-connection" x1="88" y1="150" x2="192" y2="200"></line>
+                
+                <line class="forward-connection" x1="88" y1="200" x2="192" y2="100"></line>
+                <line class="forward-connection" x1="88" y1="200" x2="192" y2="150"></line>
+                <line class="forward-connection" x1="88" y1="200" x2="192" y2="200"></line>
+                
+                <!-- Forward Connections (Hidden to Output) -->
+                <line class="forward-connection" x1="208" y1="100" x2="312" y2="125"></line>
+                <line class="forward-connection" x1="208" y1="100" x2="312" y2="175"></line>
+                
+                <line class="forward-connection" x1="208" y1="150" x2="312" y2="125"></line>
+                <line class="forward-connection" x1="208" y1="150" x2="312" y2="175"></line>
+                
+                <line class="forward-connection" x1="208" y1="200" x2="312" y2="125"></line>
+                <line class="forward-connection" x1="208" y1="200" x2="312" y2="175"></line>
+                
+                <!-- Forward Pass Animation -->
+                <g>
+                    <!-- Data Flow Animation (Input to Hidden) -->
+                    <circle fill="#4e79a7" r="4" opacity="0">
+                        <animate attributeName="cx" from="80" to="200" dur="1s" begin="1s" fill="freeze" />
+                        <animate attributeName="cy" from="100" to="100" dur="1s" begin="1s" fill="freeze" />
+                        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="1s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="2s" fill="freeze" />
+                    </circle>
+                    
+                    <circle fill="#4e79a7" r="4" opacity="0">
+                        <animate attributeName="cx" from="80" to="200" dur="1s" begin="1.2s" fill="freeze" />
+                        <animate attributeName="cy" from="150" to="150" dur="1s" begin="1.2s" fill="freeze" />
+                        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="1.2s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="2.2s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Data Flow Animation (Hidden to Output) -->
+                    <circle fill="#f28e2c" r="4" opacity="0">
+                        <animate attributeName="cx" from="200" to="320" dur="1s" begin="2.5s" fill="freeze" />
+                        <animate attributeName="cy" from="100" to="125" dur="1s" begin="2.5s" fill="freeze" />
+                        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="2.5s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="3.5s" fill="freeze" />
+                    </circle>
+                    
+                    <circle fill="#f28e2c" r="4" opacity="0">
+                        <animate attributeName="cx" from="200" to="320" dur="1s" begin="2.7s" fill="freeze" />
+                        <animate attributeName="cy" from="150" to="175" dur="1s" begin="2.7s" fill="freeze" />
+                        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="2.7s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="3.7s" fill="freeze" />
+                    </circle>
+                </g>
+                
+                <!-- Backward Connections (Output to Hidden) -->
+                <line class="backward-connection" x1="312" y1="125" x2="208" y2="100" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="312" y1="125" x2="208" y2="150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.2s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="312" y1="125" x2="208" y2="200" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.4s" fill="freeze" />
+                </line>
+                
+                <line class="backward-connection" x1="312" y1="175" x2="208" y2="100" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.6s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="312" y1="175" x2="208" y2="150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.8s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="312" y1="175" x2="208" y2="200" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                </line>
+                
+                <!-- Backward Connections (Hidden to Input) -->
+                <line class="backward-connection" x1="192" y1="100" x2="88" y2="100" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.5s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="192" y1="100" x2="88" y2="150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.7s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="192" y1="100" x2="88" y2="200" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.9s" fill="freeze" />
+                </line>
+                
+                <line class="backward-connection" x1="192" y1="150" x2="88" y2="100" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.1s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="192" y1="150" x2="88" y2="150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.3s" fill="freeze" />
+                </line>
+                <line class="backward-connection" x1="192" y1="150" x2="88" y2="200" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.5s" fill="freeze" />
+                </line>
+                
+                <!-- Error Signal -->
+                <text class="gradient-text" x="350" y="150" opacity="0">
+                    Error
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.8s" fill="freeze" />
+                </text>
+                
+                <!-- Explanation -->
+                <text class="loss-label" x="200" y="280" text-anchor="middle" opacity="0">
+                    Backpropagation: Error signals flow backward to update weights
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7s" fill="freeze" />
+                </text>
+            </svg>
+        </section>
+
+        <!-- The Value of Depth -->
+        <section id="value-of-depth">
+            <h2>The Value of Depth</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Deeper Networks Learn More Complex Features</text>
+                
+                <!-- Shallow Network (2 layers) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="0.5s" fill="freeze" />
+                    
+                    <!-- Input Layer -->
+                    <rect class="depth-layer" x="50" y="80" width="30" height="140" rx="3" ry="3"></rect>
+                    <text class="layer-label" x="65" y="240">Input</text>
+                    
+                    <!-- Input Nodes -->
+                    <circle class="depth-node node-input" cx="65" cy="100"></circle>
+                    <circle class="depth-node node-input" cx="65" cy="130"></circle>
+                    <circle class="depth-node node-input" cx="65" cy="160"></circle>
+                    <circle class="depth-node node-input" cx="65" cy="190"></circle>
+                    
+                    <!-- Output Layer -->
+                    <rect class="depth-layer" x="120" y="80" width="30" height="140" rx="3" ry="3"></rect>
+                    <text class="layer-label" x="135" y="240">Output</text>
+                    
+                    <!-- Output Nodes -->
+                    <circle class="depth-node node-output" cx="135" cy="130"></circle>
+                    <circle class="depth-node node-output" cx="135" cy="160"></circle>
+                    
+                    <!-- Connections -->
+                    <line class="depth-connection" x1="65" y1="100" x2="135" y2="130"></line>
+                    <line class="depth-connection" x1="65" y1="130" x2="135" y2="130"></line>
+                    <line class="depth-connection" x1="65" y1="160" x2="135" y2="130"></line>
+                    <line class="depth-connection" x1="65" y1="190" x2="135" y2="130"></line>
+                    
+                    <!-- Feature Labels -->
+                    <text class="depth-feature" x="135" y="115">Simple</text>
+                    <text class="depth-feature" x="135" y="175">Patterns</text>
+                </g>
+                
+                <!-- Deep Network (4 layers) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="3s" fill="freeze" />
+                    
+                    <!-- Input Layer -->
+                    <rect class="depth-layer" x="200" y="80" width="20" height="140" rx="3" ry="3"></rect>
+                    <text class="layer-label" x="210" y="240">Input</text>
+                    
+                    <!-- Input Nodes -->
+                    <circle class="depth-node node-input" cx="210" cy="100"></circle>
+                    <circle class="depth-node node-input" cx="210" cy="130"></circle>
+                    <circle class="depth-node node-input" cx="210" cy="160"></circle>
+                    <circle class="depth-node node-input" cx="210" cy="190"></circle>
+                    
+                    <!-- Hidden Layer 1 -->
+                    <rect class="depth-layer" x="240" y="80" width="20" height="140" rx="3" ry="3" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </rect>
+                    <text class="layer-label" x="250" y="240" opacity="0">
+                        H1
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Hidden Nodes 1 -->
+                    <circle class="depth-node node-hidden" cx="250" cy="100" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="250" cy="130" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="250" cy="160" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="250" cy="190" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Hidden Layer 2 -->
+                    <rect class="depth-layer" x="280" y="80" width="20" height="140" rx="3" ry="3" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </rect>
+                    <text class="layer-label" x="290" y="240" opacity="0">
+                        H2
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Hidden Nodes 2 -->
+                    <circle class="depth-node node-hidden" cx="290" cy="100" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="290" cy="130" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="290" cy="160" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </circle>
+                    <circle class="depth-node node-hidden" cx="290" cy="190" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </circle>
+                    
+                    <!-- Output Layer -->
+                    <rect class="depth-layer" x="320" y="80" width="20" height="140" rx="3" ry="3"></rect>
+                    <text class="layer-label" x="330" y="240">Output</text>
+                    
+                    <!-- Output Nodes -->
+                    <circle class="depth-node node-output" cx="330" cy="130"></circle>
+                    <circle class="depth-node node-output" cx="330" cy="160"></circle>
+                    
+                    <!-- Connections (simplified) -->
+                    <line class="depth-connection" x1="210" y1="145" x2="250" y2="145" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.2s" fill="freeze" />
+                    </line>
+                    <line class="depth-connection" x1="250" y1="145" x2="290" y2="145" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.2s" fill="freeze" />
+                    </line>
+                    <line class="depth-connection" x1="290" y1="145" x2="330" y2="145" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.4s" fill="freeze" />
+                    </line>
+                    
+                    <!-- Feature Labels -->
+                    <text class="depth-feature" x="250" y="70" opacity="0">
+                        Edges
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                    </text>
+                    <text class="depth-feature" x="290" y="70" opacity="0">
+                        Shapes
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.5s" fill="freeze" />
+                    </text>
+                    <text class="depth-feature" x="330" y="70" opacity="0">
+                        Complex
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    </text>
+                    <text class="depth-feature" x="330" y="85" opacity="0">
+                        Objects
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Complexity Labels -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7s" fill="freeze" />
+                    
+                    <text class="complexity-label" x="50" y="50">Shallow Network:</text>
+                    <text class="complexity-label" x="70" y="65">• Limited feature hierarchy</text>
+                    <text class="complexity-label" x="70" y="80">• Simple pattern recognition</text>
+                    
+                    <text class="complexity-label" x="200" y="50">Deep Network:</text>
+                    <text class="complexity-label" x="220" y="65">• Hierarchical feature learning</text>
+                    <text class="complexity-label" x="220" y="80">• Complex pattern recognition</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- The Notion of Layer -->
+        <section id="notion-of-layer">
+            <h2>The Notion of Layer</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Arrow Marker Definition -->
+                <defs>
+                    <marker id="layer-arrowhead" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 255, 255, 0.6)" />
+                    </marker>
+                </defs>
+                
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Layers: Building Blocks of Neural Networks</text>
+                
+                <!-- Input Data -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    <rect x="50" y="100" width="60" height="100" rx="5" ry="5" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"></rect>
+                    <text class="layer-title" x="80" y="90">Input</text>
+                    <text class="layer-description" x="80" y="210">Raw Data</text>
+                </g>
+                
+                <!-- Layer 1: Convolution -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.5s" fill="freeze" />
+                    <rect class="layer-box" x="150" y="100" width="60" height="100"></rect>
+                    <text class="layer-title" x="180" y="90">Layer 1</text>
+                    <text class="layer-description" x="180" y="120">Convolution</text>
+                    <text class="layer-description" x="180" y="135">Feature</text>
+                    <text class="layer-description" x="180" y="150">Extraction</text>
+                </g>
+                
+                <!-- Layer 2: Pooling -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.5s" fill="freeze" />
+                    <rect class="layer-box" x="250" y="100" width="60" height="100"></rect>
+                    <text class="layer-title" x="280" y="90">Layer 2</text>
+                    <text class="layer-description" x="280" y="120">Pooling</text>
+                    <text class="layer-description" x="280" y="135">Dimensionality</text>
+                    <text class="layer-description" x="280" y="150">Reduction</text>
+                </g>
+                
+                <!-- Output -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    <rect x="350" y="100" width="30" height="100" rx="5" ry="5" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"></rect>
+                    <text class="layer-title" x="365" y="90">Output</text>
+                    <text class="layer-description" x="365" y="210">Prediction</text>
+                </g>
+                
+                <!-- Arrows -->
+                <path class="layer-arrow" d="M 110 150 L 150 150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                </path>
+                
+                <path class="layer-arrow" d="M 210 150 L 250 150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                </path>
+                
+                <path class="layer-arrow" d="M 310 150 L 350 150" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                </path>
+                
+                <!-- Data Flow Animation -->
+                <g>
+                    <circle class="layer-data" cx="80" cy="150" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="4.5s" fill="freeze" />
+                        <animate attributeName="cx" from="80" to="180" dur="1s" begin="5s" fill="freeze" />
+                        <animate attributeName="cx" from="180" to="280" dur="1s" begin="6s" fill="freeze" />
+                        <animate attributeName="cx" from="280" to="365" dur="1s" begin="7s" fill="freeze" />
+                    </circle>
+                </g>
+                
+                <!-- Layer Properties -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="8s" fill="freeze" />
+                    
+                    <text class="layer-description" x="200" y="230">Each layer:</text>
+                    <text class="layer-description" x="200" y="245">• Transforms input data</text>
+                    <text class="layer-description" x="200" y="260">• Has learnable parameters</text>
+                    <text class="layer-description" x="200" y="275">• Applies non-linear activations</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Linear Layers -->
+        <section id="linear-layers">
+            <h2>Linear Layers</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Linear Transformation: y = Wx + b</text>
+                
+                <!-- Input Nodes -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <circle class="linear-node node-input" cx="80" cy="100"></circle>
+                    <circle class="linear-node node-input" cx="80" cy="150"></circle>
+                    <circle class="linear-node node-input" cx="80" cy="200"></circle>
+                    
+                    <text class="layer-label" x="80" y="230">Input (x)</text>
+                    <text class="layer-label" x="50" y="100">x₁</text>
+                    <text class="layer-label" x="50" y="150">x₂</text>
+                    <text class="layer-label" x="50" y="200">x₃</text>
+                </g>
+                
+                <!-- Output Nodes -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1s" fill="freeze" />
+                    
+                    <circle class="linear-node node-output" cx="320" cy="125"></circle>
+                    <circle class="linear-node node-output" cx="320" cy="175"></circle>
+                    
+                    <text class="layer-label" x="320" y="230">Output (y)</text>
+                    <text class="layer-label" x="350" y="125">y₁</text>
+                    <text class="layer-label" x="350" y="175">y₂</text>
+                </g>
+                
+                <!-- Connections with Weights -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="1.5s" fill="freeze" />
+                    
+                    <!-- Input 1 to Output 1 -->
+                    <line class="linear-connection" x1="80" y1="100" x2="320" y2="125" stroke="rgba(242, 142, 44, 0.7)"></line>
+                    <circle cx="200" cy="112.5" r="10" fill="rgba(242, 142, 44, 0.2)" stroke="rgba(242, 142, 44, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="112.5" fill="rgba(242, 142, 44, 1)">w₁₁</text>
+                    
+                    <!-- Input 2 to Output 1 -->
+                    <line class="linear-connection" x1="80" y1="150" x2="320" y2="125" stroke="rgba(242, 142, 44, 0.7)"></line>
+                    <circle cx="200" cy="137.5" r="10" fill="rgba(242, 142, 44, 0.2)" stroke="rgba(242, 142, 44, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="137.5" fill="rgba(242, 142, 44, 1)">w₁₂</text>
+                    
+                    <!-- Input 3 to Output 1 -->
+                    <line class="linear-connection" x1="80" y1="200" x2="320" y2="125" stroke="rgba(242, 142, 44, 0.7)"></line>
+                    <circle cx="200" cy="162.5" r="10" fill="rgba(242, 142, 44, 0.2)" stroke="rgba(242, 142, 44, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="162.5" fill="rgba(242, 142, 44, 1)">w₁₃</text>
+                    
+                    <!-- Input 1 to Output 2 -->
+                    <line class="linear-connection" x1="80" y1="100" x2="320" y2="175" stroke="rgba(225, 87, 89, 0.7)"></line>
+                    <circle cx="200" cy="137.5" r="10" fill="rgba(225, 87, 89, 0.2)" stroke="rgba(225, 87, 89, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="137.5" fill="rgba(225, 87, 89, 1)">w₂₁</text>
+                    
+                    <!-- Input 2 to Output 2 -->
+                    <line class="linear-connection" x1="80" y1="150" x2="320" y2="175" stroke="rgba(225, 87, 89, 0.7)"></line>
+                    <circle cx="200" cy="162.5" r="10" fill="rgba(225, 87, 89, 0.2)" stroke="rgba(225, 87, 89, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="162.5" fill="rgba(225, 87, 89, 1)">w₂₂</text>
+                    
+                    <!-- Input 3 to Output 2 -->
+                    <line class="linear-connection" x1="80" y1="200" x2="320" y2="175" stroke="rgba(225, 87, 89, 0.7)"></line>
+                    <circle cx="200" cy="187.5" r="10" fill="rgba(225, 87, 89, 0.2)" stroke="rgba(225, 87, 89, 0.7)" stroke-width="1"></circle>
+                    <text class="weight-label" x="200" y="187.5" fill="rgba(225, 87, 89, 1)">w₂₃</text>
+                </g>
+                
+                <!-- Weight Matrix Representation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="3s" fill="freeze" />
+                    
+                    <text class="equation-text" x="200" y="60">Weight Matrix (W)</text>
+                    
+                    <!-- Matrix Border -->
+                    <rect x="175" y="70" width="50" height="50" fill="none" stroke="white" stroke-width="1"></rect>
+                    
+                    <!-- Matrix Cells -->
+                    <rect class="matrix-cell" x="175" y="70" width="25" height="25" fill="rgba(242, 142, 44, 0.2)"></rect>
+                    <rect class="matrix-cell" x="200" y="70" width="25" height="25" fill="rgba(242, 142, 44, 0.2)"></rect>
+                    <rect class="matrix-cell" x="175" y="95" width="25" height="25" fill="rgba(225, 87, 89, 0.2)"></rect>
+                    <rect class="matrix-cell" x="200" y="95" width="25" height="25" fill="rgba(225, 87, 89, 0.2)"></rect>
+                    
+                    <!-- Matrix Values -->
+                    <text class="matrix-text" x="187.5" y="82.5">w₁₁</text>
+                    <text class="matrix-text" x="212.5" y="82.5">w₁₂</text>
+                    <text class="matrix-text" x="187.5" y="107.5">w₂₁</text>
+                    <text class="matrix-text" x="212.5" y="107.5">w₂₂</text>
+                </g>
+                
+                <!-- Weight Animation -->
+                <g>
+                    <!-- Weight Change Animation -->
+                    <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="4.5s" fill="freeze" />
+                    
+                    <text class="weight-label" x="200" y="112.5" fill="rgba(242, 142, 44, 1)" opacity="0">
+                        0.8
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </text>
+                    
+                    <text class="weight-label" x="200" y="137.5" fill="rgba(242, 142, 44, 1)" opacity="0">
+                        0.5
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.2s" fill="freeze" />
+                    </text>
+                    
+                    <text class="weight-label" x="200" y="162.5" fill="rgba(242, 142, 44, 1)" opacity="0">
+                        0.3
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.4s" fill="freeze" />
+                    </text>
+                    
+                    <text class="weight-label" x="200" y="137.5" fill="rgba(225, 87, 89, 1)" opacity="0">
+                        0.7
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.6s" fill="freeze" />
+                    </text>
+                    
+                    <text class="weight-label" x="200" y="162.5" fill="rgba(225, 87, 89, 1)" opacity="0">
+                        0.2
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.8s" fill="freeze" />
+                    </text>
+                    
+                    <text class="weight-label" x="200" y="187.5" fill="rgba(225, 87, 89, 1)" opacity="0">
+                        0.9
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Equation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7s" fill="freeze" />
+                    
+                    <text class="equation-text" x="200" y="260">y₁ = w₁₁x₁ + w₁₂x₂ + w₁₃x₃ + b₁</text>
+                    <text class="equation-text" x="200" y="280">y₂ = w₂₁x₁ + w₂₂x₂ + w₂₃x₃ + b₂</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Activation Functions -->
+        <section id="activation-functions">
+            <h2>Activation Functions</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Arrow Marker Definition -->
+                <defs>
+                    <marker id="activation-arrowhead" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="white" />
+                    </marker>
+                </defs>
+                
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Non-Linear Activation Functions</text>
+                
+                <!-- Coordinate System -->
+                <line class="activation-axis" x1="50" y1="150" x2="350" y2="150"></line>
+                <line class="activation-axis" x1="200" y1="50" x2="200" y2="250"></line>
+                
+                <!-- Axis Labels -->
+                <text class="activation-label" x="200" y="270">Input (x)</text>
+                <text class="activation-label" x="30" y="150" transform="rotate(-90, 30, 150)">Output (y)</text>
+                
+                <!-- Origin -->
+                <text class="activation-label" x="190" y="165">0</text>
+                
+                <!-- Sigmoid Function -->
+                <path class="activation-path sigmoid" d="M 50 230 C 100 230 150 230 175 200 C 190 180 195 120 200 120 C 205 120 210 70 225 50 C 250 20 300 20 350 20" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="0.5s" fill="freeze" />
+                </path>
+                <text class="activation-label" x="80" y="70" fill="#4e79a7" opacity="0">
+                    Sigmoid
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1s" fill="freeze" />
+                </text>
+                
+                <!-- ReLU Function -->
+                <path class="activation-path relu" d="M 50 150 L 200 150 L 350 50" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="2s" fill="freeze" />
+                </path>
+                <text class="activation-label" x="320" y="70" fill="#f28e2c" opacity="0">
+                    ReLU
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.5s" fill="freeze" />
+                </text>
+                
+                <!-- Tanh Function -->
+                <path class="activation-path tanh" d="M 50 220 C 100 220 150 220 175 180 C 190 150 195 150 200 150 C 205 150 210 150 225 120 C 250 80 300 80 350 80" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="3.5s" fill="freeze" />
+                </path>
+                <text class="activation-label" x="320" y="100" fill="#e15759" opacity="0">
+                    Tanh
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                </text>
+                
+                <!-- Input-Output Demonstration -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    
+                    <!-- Input Point -->
+                    <circle class="activation-point" cx="120" cy="150" fill="white"></circle>
+                    <text class="activation-label" x="120" y="170">Input = -2</text>
+                    
+                    <!-- Vertical Line to Functions -->
+                    <line class="activation-axis" x1="120" y1="50" x2="120" y2="250" stroke-dasharray="2,2"></line>
+                    
+                    <!-- Output Points -->
+                    <circle class="activation-point" cx="120" cy="210" fill="#4e79a7">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="5.5s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="140" y="210" fill="#4e79a7">0.12</text>
+                    
+                    <circle class="activation-point" cx="120" cy="150" fill="#f28e2c">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="6s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="140" y="150" fill="#f28e2c">0</text>
+                    
+                    <circle class="activation-point" cx="120" cy="190" fill="#e15759">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="6.5s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="140" y="190" fill="#e15759">-0.96</text>
+                </g>
+                
+                <!-- Second Input-Output Demonstration -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="7.5s" fill="freeze" />
+                    
+                    <!-- Input Point -->
+                    <circle class="activation-point" cx="280" cy="150" fill="white"></circle>
+                    <text class="activation-label" x="280" y="170">Input = 2</text>
+                    
+                    <!-- Vertical Line to Functions -->
+                    <line class="activation-axis" x1="280" y1="50" x2="280" y2="250" stroke-dasharray="2,2"></line>
+                    
+                    <!-- Output Points -->
+                    <circle class="activation-point" cx="280" cy="90" fill="#4e79a7">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="8s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="300" y="90" fill="#4e79a7">0.88</text>
+                    
+                    <circle class="activation-point" cx="280" cy="100" fill="#f28e2c">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="8.5s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="300" y="100" fill="#f28e2c">2</text>
+                    
+                    <circle class="activation-point" cx="280" cy="110" fill="#e15759">
+                        <animate attributeName="r" values="4;6;4" dur="1s" begin="9s" repeatCount="1" />
+                    </circle>
+                    <text class="activation-label" x="300" y="110" fill="#e15759">0.96</text>
+                </g>
+                
+                <!-- Purpose Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="10s" fill="freeze" />
+                    
+                    <text class="activation-label" x="200" y="240">Activation functions add non-linearity,</text>
+                    <text class="activation-label" x="200" y="255">enabling networks to learn complex patterns</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Pooling -->
+        <section id="pooling">
+            <h2>Pooling</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Arrow Marker Definition -->
+                <defs>
+                    <marker id="pooling-arrowhead" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="white" />
+                    </marker>
+                </defs>
+                
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Pooling: Dimensionality Reduction</text>
+                
+                <!-- Input Grid (4x4) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="pooling-label" x="100" y="60">Input Feature Map (4x4)</text>
+                    
+                    <!-- Grid Cells -->
+                    <rect class="grid-cell input-cell" x="50" y="80" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="80" y="80" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="110" y="80" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="140" y="80" width="30" height="30"></rect>
+                    
+                    <rect class="grid-cell input-cell" x="50" y="110" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="80" y="110" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="110" y="110" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="140" y="110" width="30" height="30"></rect>
+                    
+                    <rect class="grid-cell input-cell" x="50" y="140" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="80" y="140" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="110" y="140" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="140" y="140" width="30" height="30"></rect>
+                    
+                    <rect class="grid-cell input-cell" x="50" y="170" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="80" y="170" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="110" y="170" width="30" height="30"></rect>
+                    <rect class="grid-cell input-cell" x="140" y="170" width="30" height="30"></rect>
+                    
+                    <!-- Cell Values -->
+                    <text class="cell-value" x="65" y="95">1</text>
+                    <text class="cell-value" x="95" y="95">3</text>
+                    <text class="cell-value" x="125" y="95">2</text>
+                    <text class="cell-value" x="155" y="95">0</text>
+                    
+                    <text class="cell-value" x="65" y="125">5</text>
+                    <text class="cell-value" x="95" y="125">8</text>
+                    <text class="cell-value" x="125" y="125">4</text>
+                    <text class="cell-value" x="155" y="125">2</text>
+                    
+                    <text class="cell-value" x="65" y="155">3</text>
+                    <text class="cell-value" x="95" y="155">6</text>
+                    <text class="cell-value" x="125" y="155">7</text>
+                    <text class="cell-value" x="155" y="155">1</text>
+                    
+                    <text class="cell-value" x="65" y="185">2</text>
+                    <text class="cell-value" x="95" y="185">4</text>
+                    <text class="cell-value" x="125" y="185">5</text>
+                    <text class="cell-value" x="155" y="185">3</text>
+                </g>
+                
+                <!-- Output Grid (2x2) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.5s" fill="freeze" />
+                    
+                    <text class="pooling-label" x="300" y="60">Output Feature Map (2x2)</text>
+                    
+                    <!-- Grid Cells -->
+                    <rect class="grid-cell output-cell" x="270" y="100" width="30" height="30"></rect>
+                    <rect class="grid-cell output-cell" x="300" y="100" width="30" height="30"></rect>
+                    
+                    <rect class="grid-cell output-cell" x="270" y="130" width="30" height="30"></rect>
+                    <rect class="grid-cell output-cell" x="300" y="130" width="30" height="30"></rect>
+                </g>
+                
+                <!-- Arrow -->
+                <path class="pooling-arrow" d="M 180 130 L 250 130" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                </path>
+                
+                <!-- Pooling Window Animation -->
+                <g>
+                    <!-- First Window (Top Left) -->
+                    <rect class="pooling-window" x="50" y="80" width="60" height="60" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0.3" dur="0.5s" begin="4s" fill="freeze" />
+                    </rect>
+                    
+                    <text class="cell-value" x="285" y="115" opacity="0">
+                        8
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Second Window (Top Right) -->
+                    <rect class="pooling-window" x="110" y="80" width="60" height="60" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0.3" dur="0.5s" begin="5.5s" fill="freeze" />
+                    </rect>
+                    
+                    <text class="cell-value" x="315" y="115" opacity="0">
+                        4
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Third Window (Bottom Left) -->
+                    <rect class="pooling-window" x="50" y="140" width="60" height="60" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0.3" dur="0.5s" begin="7s" fill="freeze" />
+                    </rect>
+                    
+                    <text class="cell-value" x="285" y="145" opacity="0">
+                        6
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Fourth Window (Bottom Right) -->
+                    <rect class="pooling-window" x="110" y="140" width="60" height="60" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="7.5s" fill="freeze" />
+                        <animate attributeName="opacity" from="1" to="0.3" dur="0.5s" begin="8.5s" fill="freeze" />
+                    </rect>
+                    
+                    <text class="cell-value" x="315" y="145" opacity="0">
+                        7
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="8s" fill="freeze" />
+                    </text>
+                </g>
+                
+                <!-- Pooling Types -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="9s" fill="freeze" />
+                    
+                    <text class="pooling-label" x="200" y="220">Max Pooling: Take maximum value in each window</text>
+                    <text class="pooling-label" x="200" y="240">Average Pooling: Take average value in each window</text>
+                </g>
+                
+                <!-- Benefits -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="10s" fill="freeze" />
+                    
+                    <text class="pooling-label" x="200" y="270">Benefits: Reduces dimensions, prevents overfitting</text>
+                    <text class="pooling-label" x="200" y="285">and provides translation invariance</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Dropout -->
+        <section id="dropout">
+            <h2>Dropout</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Dropout: Preventing Overfitting</text>
+                
+                <!-- Network Without Dropout -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="dropout-label" x="100" y="60">Standard Network</text>
+                    
+                    <!-- Input Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="50" cy="100"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="50" cy="140"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="50" cy="180"></circle>
+                    
+                    <!-- Hidden Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="100" cy="90"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="100" cy="120"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="100" cy="150"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="100" cy="180"></circle>
+                    
+                    <!-- Output Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="150" cy="120"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="150" cy="160"></circle>
+                    
+                    <!-- Connections (Input to Hidden) -->
+                    <line class="dropout-connection" x1="50" y1="100" x2="100" y2="90"></line>
+                    <line class="dropout-connection" x1="50" y1="100" x2="100" y2="120"></line>
+                    <line class="dropout-connection" x1="50" y1="100" x2="100" y2="150"></line>
+                    <line class="dropout-connection" x1="50" y1="100" x2="100" y2="180"></line>
+                    
+                    <line class="dropout-connection" x1="50" y1="140" x2="100" y2="90"></line>
+                    <line class="dropout-connection" x1="50" y1="140" x2="100" y2="120"></line>
+                    <line class="dropout-connection" x1="50" y1="140" x2="100" y2="150"></line>
+                    <line class="dropout-connection" x1="50" y1="140" x2="100" y2="180"></line>
+                    
+                    <line class="dropout-connection" x1="50" y1="180" x2="100" y2="90"></line>
+                    <line class="dropout-connection" x1="50" y1="180" x2="100" y2="120"></line>
+                    <line class="dropout-connection" x1="50" y1="180" x2="100" y2="150"></line>
+                    <line class="dropout-connection" x1="50" y1="180" x2="100" y2="180"></line>
+                    
+                    <!-- Connections (Hidden to Output) -->
+                    <line class="dropout-connection" x1="100" y1="90" x2="150" y2="120"></line>
+                    <line class="dropout-connection" x1="100" y1="120" x2="150" y2="120"></line>
+                    <line class="dropout-connection" x1="100" y1="150" x2="150" y2="120"></line>
+                    <line class="dropout-connection" x1="100" y1="180" x2="150" y2="120"></line>
+                    
+                    <line class="dropout-connection" x1="100" y1="90" x2="150" y2="160"></line>
+                    <line class="dropout-connection" x1="100" y1="120" x2="150" y2="160"></line>
+                    <line class="dropout-connection" x1="100" y1="150" x2="150" y2="160"></line>
+                    <line class="dropout-connection" x1="100" y1="180" x2="150" y2="160"></line>
+                </g>
+                
+                <!-- Network With Dropout -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                    
+                    <text class="dropout-label" x="300" y="60">Network with Dropout</text>
+                    
+                    <!-- Input Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="250" cy="100"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="250" cy="140"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="250" cy="180"></circle>
+                    
+                    <!-- Hidden Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="300" cy="90"></circle>
+                    <circle class="dropout-node dropout-node-inactive" cx="300" cy="120"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="300" cy="150"></circle>
+                    <circle class="dropout-node dropout-node-inactive" cx="300" cy="180"></circle>
+                    
+                    <!-- Output Layer -->
+                    <circle class="dropout-node dropout-node-active" cx="350" cy="120"></circle>
+                    <circle class="dropout-node dropout-node-active" cx="350" cy="160"></circle>
+                    
+                    <!-- Connections (Input to Hidden) - Active Nodes -->
+                    <line class="dropout-connection" x1="250" y1="100" x2="300" y2="90"></line>
+                    <line class="dropout-connection" x1="250" y1="140" x2="300" y2="90"></line>
+                    <line class="dropout-connection" x1="250" y1="180" x2="300" y2="90"></line>
+                    
+                    <line class="dropout-connection" x1="250" y1="100" x2="300" y2="150"></line>
+                    <line class="dropout-connection" x1="250" y1="140" x2="300" y2="150"></line>
+                    <line class="dropout-connection" x1="250" y1="180" x2="300" y2="150"></line>
+                    
+                    <!-- Connections (Input to Hidden) - Inactive Nodes -->
+                    <line class="dropout-connection-inactive" x1="250" y1="100" x2="300" y2="120"></line>
+                    <line class="dropout-connection-inactive" x1="250" y1="140" x2="300" y2="120"></line>
+                    <line class="dropout-connection-inactive" x1="250" y1="180" x2="300" y2="120"></line>
+                    
+                    <line class="dropout-connection-inactive" x1="250" y1="100" x2="300" y2="180"></line>
+                    <line class="dropout-connection-inactive" x1="250" y1="140" x2="300" y2="180"></line>
+                    <line class="dropout-connection-inactive" x1="250" y1="180" x2="300" y2="180"></line>
+                    
+                    <!-- Connections (Hidden to Output) - Active Nodes -->
+                    <line class="dropout-connection" x1="300" y1="90" x2="350" y2="120"></line>
+                    <line class="dropout-connection" x1="300" y1="150" x2="350" y2="120"></line>
+                    
+                    <line class="dropout-connection" x1="300" y1="90" x2="350" y2="160"></line>
+                    <line class="dropout-connection" x1="300" y1="150" x2="350" y2="160"></line>
+                    
+                    <!-- Connections (Hidden to Output) - Inactive Nodes -->
+                    <line class="dropout-connection-inactive" x1="300" y1="120" x2="350" y2="120"></line>
+                    <line class="dropout-connection-inactive" x1="300" y1="180" x2="350" y2="120"></line>
+                    
+                    <line class="dropout-connection-inactive" x1="300" y1="120" x2="350" y2="160"></line>
+                    <line class="dropout-connection-inactive" x1="300" y1="180" x2="350" y2="160"></line>
+                </g>
+                
+                <!-- Dropout Animation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    
+                    <text class="dropout-probability" x="300" y="220">Dropout Probability: 0.5</text>
+                    <text class="dropout-label" x="300" y="240">Randomly deactivate 50% of neurons during training</text>
+                </g>
+                
+                <!-- Benefits -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5s" fill="freeze" />
+                    
+                    <text class="dropout-label" x="200" y="270">Benefits: Prevents co-adaptation, reduces overfitting,</text>
+                    <text class="dropout-label" x="200" y="285">and acts as ensemble learning</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Attention Layers -->
+        <section id="attention-layers">
+            <h2>Attention Layers</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Attention: Focus on Relevant Parts</text>
+                
+                <!-- Input Tokens -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="60">Input Sequence</text>
+                    
+                    <!-- Token Rectangles -->
+                    <rect class="token-rect" x="50" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="100" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="150" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="200" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="250" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="300" y="80" width="40" height="30"></rect>
+                    
+                    <!-- Token Text -->
+                    <text class="token-text" x="70" y="95">The</text>
+                    <text class="token-text" x="120" y="95">cat</text>
+                    <text class="token-text" x="170" y="95">sat</text>
+                    <text class="token-text" x="220" y="95">on</text>
+                    <text class="token-text" x="270" y="95">the</text>
+                    <text class="token-text" x="320" y="95">mat</text>
+                 </g>
+                 
+                 <!-- Attention Matrix -->
+                 <g opacity="0">
+                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                     
+                     <text class="attention-label" x="200" y="130">Attention Weights</text>
+                     
+                     <!-- Matrix Cells (6x6) -->
+                     <!-- Row 1 -->
+                     <rect class="attention-cell attention-value-low" x="80" y="150" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="100" y="150" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="120" y="150" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="140" y="150" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-medium" x="160" y="150" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="180" y="150" width="20" height="20"></rect>
+                     
+                     <!-- Row 2 -->
+                     <rect class="attention-cell attention-value-low" x="80" y="170" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="100" y="170" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="120" y="170" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-medium" x="140" y="170" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="160" y="170" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-high" x="180" y="170" width="20" height="20"></rect>
+                     
+                     <!-- Row 3 -->
+                     <rect class="attention-cell attention-value-low" x="80" y="190" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-high" x="100" y="190" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="120" y="190" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="140" y="190" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="160" y="190" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="180" y="190" width="20" height="20"></rect>
+                     
+                     <!-- Row 4 -->
+                     <rect class="attention-cell attention-value-low" x="80" y="210" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="100" y="210" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-high" x="120" y="210" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="140" y="210" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="160" y="210" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="180" y="210" width="20" height="20"></rect>
+                     
+                     <!-- Row 5 -->
+                     <rect class="attention-cell attention-value-high" x="80" y="230" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="100" y="230" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="120" y="230" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="140" y="230" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="160" y="230" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="180" y="230" width="20" height="20"></rect>
+                     
+                     <!-- Row 6 -->
+                     <rect class="attention-cell attention-value-low" x="80" y="250" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="100" y="250" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="120" y="250" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="140" y="250" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-high" x="160" y="250" width="20" height="20"></rect>
+                     <rect class="attention-cell attention-value-low" x="180" y="250" width="20" height="20"></rect>
+                     
+                     <!-- Row/Column Labels -->
+                     <text class="token-text" x="70" y="160" font-size="10">The</text>
+                     <text class="token-text" x="70" y="180" font-size="10">cat</text>
+                     <text class="token-text" x="70" y="200" font-size="10">sat</text>
+                     <text class="token-text" x="70" y="220" font-size="10">on</text>
+                     <text class="token-text" x="70" y="240" font-size="10">the</text>
+                     <text class="token-text" x="70" y="260" font-size="10">mat</text>
+                     
+                     <text class="token-text" x="90" y="140" font-size="10">The</text>
+                     <text class="token-text" x="110" y="140" font-size="10">cat</text>
+                     <text class="token-text" x="130" y="140" font-size="10">sat</text>
+                     <text class="token-text" x="150" y="140" font-size="10">on</text>
+                     <text class="token-text" x="170" y="140" font-size="10">the</text>
+                     <text class="token-text" x="190" y="140" font-size="10">mat</text>
+                 </g>
+                 
+                 <!-- Attention Visualization -->
+                 <g opacity="0">
+                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                     
+                     <text class="attention-label" x="300" y="160">Focus on "cat"</text>
+                     
+                     <!-- Attention Lines -->
+                     <line class="attention-line" x1="120" y1="110" x2="120" y2="170" opacity="0.2"></line>
+                     <line class="attention-line" x1="120" y1="110" x2="170" y2="190" opacity="0.9" stroke-width="3"></line>
+                     <line class="attention-line" x1="120" y1="110" x2="220" y2="210" opacity="0.2"></line>
+                     <line class="attention-line" x1="120" y1="110" x2="270" y2="230" opacity="0.2"></line>
+                     <line class="attention-line" x1="120" y1="110" x2="320" y2="250" opacity="0.2"></line>
+                 </g>
+                 
+                 <!-- Attention Shift -->
+                 <g opacity="0">
+                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                     
+                     <text class="attention-label" x="300" y="190">Focus on "mat"</text>
+                     
+                     <!-- Attention Lines -->
+                     <line class="attention-line" x1="320" y1="110" x2="70" y2="150" opacity="0.2"></line>
+                     <line class="attention-line" x1="320" y1="110" x2="120" y2="170" opacity="0.9" stroke-width="3"></line>
+                     <line class="attention-line" x1="320" y1="110" x2="170" y2="190" opacity="0.2"></line>
+                     <line class="attention-line" x1="320" y1="110" x2="220" y2="210" opacity="0.2"></line>
+                     <line class="attention-line" x1="320" y1="110" x2="270" y2="230" opacity="0.2"></line>
+                 </g>
+                 
+                 <!-- Explanation -->
+                 <g opacity="0">
+                     <animate attributeName="opacity" from="0" to="1" dur="1s" begin="6.5s" fill="freeze" />
+                     
+                     <text class="attention-label" x="300" y="230">Attention allows the model to focus</text>
+                     <text class="attention-label" x="300" y="245">on relevant parts of the input</text>
+                     <text class="attention-label" x="300" y="260">for each token being processed</text>
+                 </g>
+             </svg>
+         </section>
+
+        <!-- Token Embedding -->
+        <section id="token-embedding">
+            <h2>Token Embedding</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Token Embedding: Words to Vectors</text>
+                
+                <!-- Input Tokens -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="100" y="60">Input Tokens</text>
+                    
+                    <!-- Token Rectangles -->
+                    <rect class="token-rect" x="50" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="100" y="80" width="40" height="30"></rect>
+                    <rect class="token-rect" x="150" y="80" width="40" height="30"></rect>
+                    
+                    <!-- Token Text -->
+                    <text class="token-text" x="70" y="95">cat</text>
+                    <text class="token-text" x="120" y="95">sat</text>
+                    <text class="token-text" x="170" y="95">mat</text>
+                </g>
+                
+                <!-- Embedding Vectors -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                    
+                    <text class="attention-label" x="300" y="60">Embedding Vectors</text>
+                    
+                    <!-- Vector Matrices -->
+                    <g transform="translate(250, 80)">
+                        <!-- Cat Vector -->
+                        <rect class="matrix-cell tensor-1d" x="0" y="0" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="0" y="20" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="0" y="40" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="0" y="60" width="20" height="20"></rect>
+                        
+                        <!-- Sat Vector -->
+                        <rect class="matrix-cell tensor-1d" x="30" y="0" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="30" y="20" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="30" y="40" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="30" y="60" width="20" height="20"></rect>
+                        
+                        <!-- Mat Vector -->
+                        <rect class="matrix-cell tensor-1d" x="60" y="0" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="60" y="20" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="60" y="40" width="20" height="20"></rect>
+                        <rect class="matrix-cell tensor-1d" x="60" y="60" width="20" height="20"></rect>
+                        
+                        <!-- Vector Values -->
+                        <text class="matrix-text" x="10" y="10">0.2</text>
+                        <text class="matrix-text" x="10" y="30">0.7</text>
+                        <text class="matrix-text" x="10" y="50">0.4</text>
+                        <text class="matrix-text" x="10" y="70">0.1</text>
+                        
+                        <text class="matrix-text" x="40" y="10">0.3</text>
+                        <text class="matrix-text" x="40" y="30">0.1</text>
+                        <text class="matrix-text" x="40" y="50">0.8</text>
+                        <text class="matrix-text" x="40" y="70">0.5</text>
+                        
+                        <text class="matrix-text" x="70" y="10">0.2</text>
+                        <text class="matrix-text" x="70" y="30">0.6</text>
+                        <text class="matrix-text" x="70" y="50">0.3</text>
+                        <text class="matrix-text" x="70" y="70">0.9</text>
+                    </g>
+                </g>
+                
+                <!-- Embedding Process -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    
+                    <!-- Arrows -->
+                    <path class="token-arrow" d="M 70 110 C 70 140 250 140 250 90" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 120 110 C 120 150 280 150 280 90" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 170 110 C 170 160 310 160 310 90" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Embedding Space Visualization -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="180">Embedding Space (2D Projection)</text>
+                    
+                    <!-- Coordinate System -->
+                    <line class="activation-axis" x1="100" y1="250" x2="300" y2="250"></line>
+                    <line class="activation-axis" x1="100" y1="250" x2="100" y2="200"></line>
+                    
+                    <!-- Word Points -->
+                    <circle class="data-point" cx="150" cy="230" r="5"></circle>
+                    <text class="activation-label" x="150" y="220">cat</text>
+                    
+                    <circle class="data-point" cx="200" cy="210" r="5"></circle>
+                    <text class="activation-label" x="200" y="200">sat</text>
+                    
+                    <circle class="data-point" cx="250" cy="225" r="5"></circle>
+                    <text class="activation-label" x="250" y="215">mat</text>
+                    
+                    <!-- Similar Words Connections -->
+                    <line class="attention-line" x1="150" y1="230" x2="250" y2="225" opacity="0.7" stroke-width="1"></line>
+                    <line class="attention-line" x1="200" y1="210" x2="250" y2="225" opacity="0.7" stroke-width="1"></line>
+                </g>
+                
+                <!-- Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="6.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="100" y="280">• Converts discrete tokens to continuous vectors</text>
+                    <text class="attention-label" x="300" y="280">• Similar words have similar vectors</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Multi-head Attention -->
+        <section id="multi-head-attention">
+            <h2>Multi-head Attention</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Multi-head Attention: Parallel Processing</text>
+                
+                <!-- Input Sequence -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="60">Input Sequence</text>
+                    
+                    <!-- Input Tokens -->
+                    <rect class="token-rect" x="140" y="80" width="30" height="30"></rect>
+                    <rect class="token-rect" x="180" y="80" width="30" height="30"></rect>
+                    <rect class="token-rect" x="220" y="80" width="30" height="30"></rect>
+                    <rect class="token-rect" x="260" y="80" width="30" height="30"></rect>
+                    
+                    <!-- Token Text -->
+                    <text class="token-text" x="155" y="95" font-size="12">X₁</text>
+                    <text class="token-text" x="195" y="95" font-size="12">X₂</text>
+                    <text class="token-text" x="235" y="95" font-size="12">X₃</text>
+                    <text class="token-text" x="275" y="95" font-size="12">X₄</text>
+                </g>
+                
+                <!-- Attention Heads -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                    
+                    <!-- Head 1 -->
+                    <rect class="layer-box" x="80" y="140" width="60" height="40" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="110" y="165" font-size="12">Head 1</text>
+                    
+                    <!-- Head 2 -->
+                    <rect class="layer-box" x="170" y="140" width="60" height="40" fill="rgba(242, 142, 44, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="165" font-size="12">Head 2</text>
+                    
+                    <!-- Head 3 -->
+                    <rect class="layer-box" x="260" y="140" width="60" height="40" fill="rgba(225, 87, 89, 0.3)"></rect>
+                    <text class="layer-title" x="290" y="165" font-size="12">Head 3</text>
+                </g>
+                
+                <!-- Attention Patterns -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                    
+                    <!-- Head 1 Connections (focus on adjacent tokens) -->
+                    <line class="attention-line" x1="155" y1="110" x2="110" y2="140" stroke="#4e79a7" opacity="0.7"></line>
+                    <line class="attention-line" x1="195" y1="110" x2="110" y2="140" stroke="#4e79a7" opacity="0.7"></line>
+                    
+                    <!-- Head 2 Connections (focus on position) -->
+                    <line class="attention-line" x1="195" y1="110" x2="200" y2="140" stroke="#f28e2c" opacity="0.7"></line>
+                    <line class="attention-line" x1="235" y1="110" x2="200" y2="140" stroke="#f28e2c" opacity="0.7"></line>
+                    
+                    <!-- Head 3 Connections (focus on semantics) -->
+                    <line class="attention-line" x1="155" y1="110" x2="290" y2="140" stroke="#e15759" opacity="0.7"></line>
+                    <line class="attention-line" x1="275" y1="110" x2="290" y2="140" stroke="#e15759" opacity="0.7"></line>
+                </g>
+                
+                <!-- Concatenation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                    
+                    <!-- Concatenation Box -->
+                    <rect class="layer-box" x="150" y="210" width="100" height="40"></rect>
+                    <text class="layer-title" x="200" y="235" font-size="12">Concatenate</text>
+                    
+                    <!-- Arrows to Concatenation -->
+                    <path class="token-arrow" d="M 110 180 L 110 210 C 110 220 150 220 150 210" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 200 180 L 200 210" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 290 180 L 290 210 C 290 220 250 220 250 210" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Output Projection -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    
+                    <!-- Output Box -->
+                    <rect class="layer-box" x="150" y="270" width="100" height="20"></rect>
+                    <text class="layer-title" x="200" y="285" font-size="12">Output</text>
+                    
+                    <!-- Arrow to Output -->
+                    <path class="token-arrow" d="M 200 250 L 200 270" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7s" fill="freeze" />
+                    
+                    <text class="attention-label" x="370" y="130" text-anchor="end">Each head learns</text>
+                    <text class="attention-label" x="370" y="145" text-anchor="end">different patterns</text>
+                    <text class="attention-label" x="370" y="160" text-anchor="end">of attention</text>
+                    
+                    <text class="attention-label" x="370" y="210" text-anchor="end">Combine multiple</text>
+                    <text class="attention-label" x="370" y="225" text-anchor="end">perspectives</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Transformer -->
+        <section id="transformer">
+            <h2>Transformer</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Transformer Architecture</text>
+                
+                <!-- Input Embeddings -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <rect class="layer-box" x="150" y="60" width="100" height="20"></rect>
+                    <text class="layer-title" x="200" y="75" font-size="12">Input Embeddings</text>
+                </g>
+                
+                <!-- Encoder Block -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.5s" fill="freeze" />
+                    
+                    <rect x="100" y="100" width="200" height="120" rx="5" ry="5" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="5,2"></rect>
+                    <text class="layer-title" x="200" y="115" font-size="14">Encoder Block</text>
+                    
+                    <!-- Multi-head Attention -->
+                    <rect class="layer-box" x="150" y="130" width="100" height="25" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="147" font-size="11">Multi-head Attention</text>
+                    
+                    <!-- Add & Norm -->
+                    <rect class="layer-box" x="150" y="165" width="100" height="20" fill="rgba(242, 142, 44, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="180" font-size="11">Add & Normalize</text>
+                    
+                    <!-- Feed Forward -->
+                    <rect class="layer-box" x="150" y="195" width="100" height="25" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="212" font-size="11">Feed Forward</text>
+                    
+                    <!-- Add & Norm -->
+                    <rect class="layer-box" x="150" y="230" width="100" height="20" fill="rgba(242, 142, 44, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="245" font-size="11">Add & Normalize</text>
+                    
+                    <!-- Skip Connection -->
+                    <path class="token-arrow" d="M 200 80 L 200 130" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 250 147 C 280 147 280 165 250 165" marker-end="url(#arrowhead)" stroke-dasharray="3,2"></path>
+                    <path class="token-arrow" d="M 200 185 L 200 195" marker-end="url(#arrowhead)"></path>
+                    <path class="token-arrow" d="M 250 212 C 280 212 280 230 250 230" marker-end="url(#arrowhead)" stroke-dasharray="3,2"></path>
+                </g>
+                
+                <!-- Output -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                    
+                    <rect class="layer-box" x="150" y="270" width="100" height="20"></rect>
+                    <text class="layer-title" x="200" y="285" font-size="12">Output</text>
+                    
+                    <path class="token-arrow" d="M 200 250 L 200 270" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Nx Indicator -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    
+                    <text class="attention-label" x="320" y="160" font-size="14">×N</text>
+                    <text class="attention-label" x="320" y="175" font-size="10">Stacked</text>
+                    <text class="attention-label" x="320" y="185" font-size="10">Layers</text>
+                </g>
+                
+                <!-- Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="50" y="130" text-anchor="start" font-size="10">Self-attention</text>
+                    <text class="attention-label" x="50" y="142" text-anchor="start" font-size="10">captures context</text>
+                    
+                    <text class="attention-label" x="50" y="195" text-anchor="start" font-size="10">Feed-forward</text>
+                    <text class="attention-label" x="50" y="207" text-anchor="start" font-size="10">processes each</text>
+                    <text class="attention-label" x="50" y="219" text-anchor="start" font-size="10">position</text>
+                    
+                    <text class="attention-label" x="50" y="250" text-anchor="start" font-size="10">Skip connections</text>
+                    <text class="attention-label" x="50" y="262" text-anchor="start" font-size="10">help training</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- GPT Model -->
+        <section id="gpt-model">
+            <h2>GPT Model</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">GPT: Generative Pre-trained Transformer</text>
+                
+                <!-- Input Sequence -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="55">Input Sequence</text>
+                    
+                    <!-- Token Boxes -->
+                    <rect class="token-box" x="80" y="65" width="40" height="25"></rect>
+                    <rect class="token-box" x="130" y="65" width="40" height="25"></rect>
+                    <rect class="token-box" x="180" y="65" width="40" height="25"></rect>
+                    <rect class="token-box" x="230" y="65" width="40" height="25"></rect>
+                    <rect class="token-box" x="280" y="65" width="40" height="25" fill="rgba(78, 121, 167, 0.4)" stroke="rgba(78, 121, 167, 0.9)"></rect>
+                    
+                    <!-- Token Text -->
+                    <text class="token-text" x="100" y="78">The</text>
+                    <text class="token-text" x="150" y="78">quick</text>
+                    <text class="token-text" x="200" y="78">brown</text>
+                    <text class="token-text" x="250" y="78">fox</text>
+                    <text class="token-text" x="300" y="78">?</text>
+                </g>
+                
+                <!-- Masked Self-Attention -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="105">Masked Self-Attention</text>
+                    
+                    <!-- Attention Matrix (Triangular) -->
+                    <rect class="attention-cell attention-value-high" x="80" y="115" width="20" height="20"></rect>
+                    
+                    <rect class="attention-cell attention-value-low" x="80" y="135" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="100" y="135" width="20" height="20"></rect>
+                    
+                    <rect class="attention-cell attention-value-low" x="80" y="155" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-medium" x="100" y="155" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="120" y="155" width="20" height="20"></rect>
+                    
+                    <rect class="attention-cell attention-value-low" x="80" y="175" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-low" x="100" y="175" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-medium" x="120" y="175" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="140" y="175" width="20" height="20"></rect>
+                    
+                    <rect class="attention-cell attention-value-medium" x="80" y="195" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="100" y="195" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-medium" x="120" y="195" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="140" y="195" width="20" height="20"></rect>
+                    <rect class="attention-cell attention-value-high" x="160" y="195" width="20" height="20"></rect>
+                    
+                    <!-- Masked Area (Future Tokens) -->
+                    <rect x="100" y="115" width="80" height="20" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="2,2"></rect>
+                    <rect x="120" y="135" width="60" height="20" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="2,2"></rect>
+                    <rect x="140" y="155" width="40" height="20" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="2,2"></rect>
+                    <rect x="160" y="175" width="20" height="20" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="2,2"></rect>
+                    
+                    <text class="attention-label" x="220" y="155" font-size="10">Cannot see</text>
+                    <text class="attention-label" x="220" y="167" font-size="10">future tokens</text>
+                </g>
+                
+                <!-- Transformer Blocks -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    
+                    <rect class="layer-box" x="200" y="130" width="120" height="60" rx="5" ry="5"></rect>
+                    <text class="layer-title" x="260" y="150">Transformer</text>
+                    <text class="layer-title" x="260" y="170">Decoder Blocks</text>
+                    
+                    <text class="attention-label" x="260" y="195" font-size="12">×N Layers</text>
+                </g>
+                
+                <!-- Next Token Prediction -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="225">Next Token Prediction</text>
+                    
+                    <!-- Vocabulary Distribution -->
+                    <rect x="80" y="235" width="240" height="30" rx="3" ry="3" fill="rgba(78, 121, 167, 0.1)" stroke="rgba(78, 121, 167, 0.5)" stroke-width="1"></rect>
+                    
+                    <!-- Probability Bars -->
+                    <rect x="90" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <rect x="100" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="110" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.4)"></rect>
+                    <rect x="120" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.1)"></rect>
+                    <rect x="130" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="140" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <rect x="150" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.1)"></rect>
+                    <rect x="160" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="170" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.1)"></rect>
+                    <rect x="180" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="190" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.7)"></rect>
+                    <rect x="200" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="210" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <rect x="220" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.1)"></rect>
+                    <rect x="230" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="240" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.9)"></rect>
+                    <rect x="250" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <rect x="260" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="270" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.1)"></rect>
+                    <rect x="280" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.4)"></rect>
+                    <rect x="290" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.2)"></rect>
+                    <rect x="300" y="245" width="5" height="15" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    
+                    <!-- Highest Probability Token -->
+                    <rect x="240" y="240" width="5" height="25" fill="rgba(242, 142, 44, 0.9)" stroke="rgba(242, 142, 44, 0.5)" stroke-width="1">
+                        <animate attributeName="height" values="15;25;15" dur="2s" begin="6s" repeatCount="1" />
+                    </rect>
+                    
+                    <text class="attention-label" x="242.5" y="275" text-anchor="middle" font-size="10">jumps</text>
+                </g>
+                
+                <!-- Explanation -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7s" fill="freeze" />
+                    
+                    <text class="attention-label" x="370" y="80" text-anchor="end" font-size="10">Autoregressive:</text>
+                    <text class="attention-label" x="370" y="92" text-anchor="end" font-size="10">Generates one</text>
+                    <text class="attention-label" x="370" y="104" text-anchor="end" font-size="10">token at a time</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Chain of Thought -->
+        <section id="chain-of-thought">
+            <h2>Chain of Thought</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Chain of Thought: Step-by-Step Reasoning</text>
+                
+                <!-- Problem Statement -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <rect class="token-box" x="50" y="50" width="300" height="40" rx="5" ry="5"></rect>
+                    <text class="token-text" x="200" y="65" font-size="12">Problem: If John has 5 apples and gives</text>
+                    <text class="token-text" x="200" y="80" font-size="12">2 to Mary, how many does he have left?</text>
+                </g>
+                
+                <!-- Direct Answer -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.5s" fill="freeze" />
+                    
+                    <rect class="token-box" x="50" y="100" width="140" height="30" rx="5" ry="5" fill="rgba(225, 87, 89, 0.2)" stroke="rgba(225, 87, 89, 0.7)"></rect>
+                    <text class="token-text" x="120" y="120" font-size="12">Answer: 3 apples</text>
+                    
+                    <text class="attention-label" x="120" y="140" font-size="10">Direct Answer</text>
+                    <text class="attention-label" x="120" y="152" font-size="10">(No reasoning)</text>
+                </g>
+                
+                <!-- Chain of Thought Process -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze" />
+                    
+                    <rect class="token-box" x="210" y="100" width="140" height="140" rx="5" ry="5" fill="rgba(78, 121, 167, 0.2)" stroke="rgba(78, 121, 167, 0.7)"></rect>
+                    
+                    <!-- Step 1 -->
+                    <text class="token-text" x="280" y="120" font-size="11" opacity="0">
+                        Step 1: John has 5 apples
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Step 2 -->
+                    <text class="token-text" x="280" y="145" font-size="11" opacity="0">
+                        Step 2: John gives 2 apples
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Step 3 -->
+                    <text class="token-text" x="280" y="170" font-size="11" opacity="0">
+                        Step 3: 5 - 2 = 3 apples
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.5s" fill="freeze" />
+                    </text>
+                    
+                    <!-- Final Answer -->
+                    <text class="token-text" x="280" y="195" font-size="11" opacity="0">
+                        Answer: 3 apples
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6.5s" fill="freeze" />
+                    </text>
+                    
+                    <text class="attention-label" x="280" y="225" font-size="10">Chain of Thought</text>
+                    <text class="attention-label" x="280" y="237" font-size="10">(Step-by-step reasoning)</text>
+                </g>
+                
+                <!-- Benefits -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="7.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="260" font-size="12">Benefits of Chain of Thought:</text>
+                    <text class="attention-label" x="100" y="280" font-size="11" text-anchor="start">• Improved accuracy</text>
+                    <text class="attention-label" x="200" y="280" font-size="11" text-anchor="start">• Explainability</text>
+                    <text class="attention-label" x="300" y="280" font-size="11" text-anchor="start">• Complex reasoning</text>
+                </g>
+            </svg>
+        </section>
+
+        <!-- Quantization -->
+        <section id="quantization">
+            <h2>Quantization</h2>
+            <svg class="visualization" viewBox="0 0 400 300">
+                <!-- Title -->
+                <text class="tensor-operation" x="200" y="30">Quantization: Reducing Precision</text>
+                
+                <!-- Original Weights (FP32) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="100" y="60">Original Weights (FP32)</text>
+                    
+                    <!-- Weight Matrix -->
+                    <g transform="translate(50, 70)">
+                        <rect class="matrix-cell tensor-2d" x="0" y="0" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="30" y="0" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="60" y="0" width="30" height="20"></rect>
+                        
+                        <rect class="matrix-cell tensor-2d" x="0" y="20" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="30" y="20" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="60" y="20" width="30" height="20"></rect>
+                        
+                        <rect class="matrix-cell tensor-2d" x="0" y="40" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="30" y="40" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-2d" x="60" y="40" width="30" height="20"></rect>
+                        
+                        <!-- Weight Values -->
+                        <text class="matrix-text" x="15" y="15" font-size="10">1.2371</text>
+                        <text class="matrix-text" x="45" y="15" font-size="10">-0.8492</text>
+                        <text class="matrix-text" x="75" y="15" font-size="10">0.5283</text>
+                        
+                        <text class="matrix-text" x="15" y="35" font-size="10">-0.3721</text>
+                        <text class="matrix-text" x="45" y="35" font-size="10">0.9127</text>
+                        <text class="matrix-text" x="75" y="35" font-size="10">-0.2731</text>
+                        
+                        <text class="matrix-text" x="15" y="55" font-size="10">0.6182</text>
+                        <text class="matrix-text" x="45" y="55" font-size="10">-0.4291</text>
+                        <text class="matrix-text" x="75" y="55" font-size="10">0.7812</text>
+                    </g>
+                    
+                    <!-- Memory Size -->
+                    <rect x="50" y="120" width="90" height="20" rx="3" ry="3" fill="rgba(78, 121, 167, 0.2)" stroke="rgba(78, 121, 167, 0.7)" stroke-width="1"></rect>
+                    <text class="attention-label" x="95" y="135" font-size="10">Memory: 32 bits/value</text>
+                </g>
+                
+                <!-- Quantization Process -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="170">Quantization Process</text>
+                    
+                    <!-- Process Steps -->
+                    <rect class="layer-box" x="120" y="180" width="160" height="25" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="197" font-size="11">1. Find Min/Max Values</text>
+                    
+                    <rect class="layer-box" x="120" y="210" width="160" height="25" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="227" font-size="11">2. Map to Integer Range</text>
+                    
+                    <rect class="layer-box" x="120" y="240" width="160" height="25" fill="rgba(78, 121, 167, 0.3)"></rect>
+                    <text class="layer-title" x="200" y="257" font-size="11">3. Store Scale Factors</text>
+                    
+                    <!-- Arrow -->
+                    <path class="token-arrow" d="M 150 100 C 200 100 200 180 200 180" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Quantized Weights (INT8) -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4s" fill="freeze" />
+                    
+                    <text class="attention-label" x="300" y="60">Quantized Weights (INT8)</text>
+                    
+                    <!-- Weight Matrix -->
+                    <g transform="translate(250, 70)">
+                        <rect class="matrix-cell tensor-3d" x="0" y="0" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="30" y="0" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="60" y="0" width="30" height="20"></rect>
+                        
+                        <rect class="matrix-cell tensor-3d" x="0" y="20" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="30" y="20" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="60" y="20" width="30" height="20"></rect>
+                        
+                        <rect class="matrix-cell tensor-3d" x="0" y="40" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="30" y="40" width="30" height="20"></rect>
+                        <rect class="matrix-cell tensor-3d" x="60" y="40" width="30" height="20"></rect>
+                        
+                        <!-- Weight Values -->
+                        <text class="matrix-text" x="15" y="15" font-size="10">124</text>
+                        <text class="matrix-text" x="45" y="15" font-size="10">-85</text>
+                        <text class="matrix-text" x="75" y="15" font-size="10">53</text>
+                        
+                        <text class="matrix-text" x="15" y="35" font-size="10">-37</text>
+                        <text class="matrix-text" x="45" y="35" font-size="10">91</text>
+                        <text class="matrix-text" x="75" y="35" font-size="10">-27</text>
+                        
+                        <text class="matrix-text" x="15" y="55" font-size="10">62</text>
+                        <text class="matrix-text" x="45" y="55" font-size="10">-43</text>
+                        <text class="matrix-text" x="75" y="55" font-size="10">78</text>
+                    </g>
+                    
+                    <!-- Memory Size -->
+                    <rect x="250" y="120" width="90" height="20" rx="3" ry="3" fill="rgba(225, 87, 89, 0.2)" stroke="rgba(225, 87, 89, 0.7)" stroke-width="1"></rect>
+                    <text class="attention-label" x="295" y="135" font-size="10">Memory: 8 bits/value</text>
+                    
+                    <!-- Arrow -->
+                    <path class="token-arrow" d="M 250 100 C 200 100 200 180 200 180" marker-end="url(#arrowhead)"></path>
+                </g>
+                
+                <!-- Benefits -->
+                <g opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" dur="1s" begin="5.5s" fill="freeze" />
+                    
+                    <text class="attention-label" x="200" y="280" font-size="12">Benefits: 4× smaller models, faster inference, lower power usage</text>
+                </g>
+            </svg>
+        </section>
+    </div>
+</body>
+</html> 
