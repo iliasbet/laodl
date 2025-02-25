@@ -19,7 +19,6 @@
             color: #ffffff;
             font-family: 'Lexend Deca', sans-serif;
             line-height: 1.6;
-            overflow-x: hidden;
         }
 
         .container {
@@ -42,14 +41,6 @@
             font-weight: 400;            
         }
 
-        /* Animation styles */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-            will-change: opacity, transform;
-        }
-
         section {
             margin-bottom: 4rem;
         }
@@ -64,13 +55,6 @@
         /* SVG Styles */
         svg {
             overflow: visible;
-        }
-
-        /* Remove all SVG animations and control them with CSS */
-        svg [begin] {
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
-            will-change: opacity;
         }
 
         .axis {
@@ -593,7 +577,7 @@
         <h1>Little App of Deep Learning</h1>
 
         <!-- 1. Foundations - Machine Learning -->
-        <section id="learning-from-data" class="animate-on-scroll">
+        <section id="learning-from-data">
             <h2>Learning from Data</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -605,12 +589,12 @@
                 <!-- Data Points -->
                 <circle class="data-point" cx="80" cy="200" r="4">
                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze" />
-                    </circle>
+                </circle>
                 <circle class="data-point" cx="120" cy="180" r="4">
                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.2s" fill="freeze" />
                 </circle>
-                    <circle class="data-point" cx="160" cy="150" r="4">
-                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.4s" fill="freeze" />
+                <circle class="data-point" cx="160" cy="150" r="4">
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.4s" fill="freeze" />
                 </circle>
                 <circle class="data-point" cx="200" cy="130" r="4">
                     <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.6s" fill="freeze" />
@@ -645,7 +629,7 @@
         </section>
 
         <!-- Basis Function Regression -->
-        <section id="basis-function-regression" class="animate-on-scroll">
+        <section id="basis-function-regression">
             <h2>Basis Function Regression</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -701,7 +685,7 @@
         </section>
 
         <!-- Under and Overfitting -->
-        <section id="under-overfitting" class="animate-on-scroll">
+        <section id="under-overfitting">
             <h2>Under and Overfitting</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Left Graph (Underfitting) -->
@@ -783,7 +767,7 @@
                 
                 <!-- Morphing Animation -->
                 <path class="underfit" d="M 30 220 L 180 80" opacity="0">
-                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
+                    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="6s" fill="freeze" />
                     <animate attributeName="d" 
                              from="M 30 220 L 180 80" 
                              to="M 30 200 C 40 210 45 160 50 200 C 60 240 65 150 70 170 C 75 190 85 210 90 190 C 95 170 105 110 110 130 C 115 150 125 90 130 110 C 140 130 145 70 150 90 C 160 110 170 50 180 70" 
@@ -801,7 +785,7 @@
         </section>
 
         <!-- GPUs, TPUs, and Batches -->
-        <section id="hardware-acceleration" class="animate-on-scroll">
+        <section id="hardware-acceleration">
             <h2>GPUs, TPUs, and Batches</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- CPU (for comparison) -->
@@ -900,7 +884,7 @@
         </section>
 
         <!-- Tensors -->
-        <section id="tensors" class="animate-on-scroll">
+        <section id="tensors">
             <h2>Tensors</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- 1D Tensor (Vector) -->
@@ -1018,7 +1002,7 @@
         </section>
 
         <!-- Losses -->
-        <section id="losses" class="animate-on-scroll">
+        <section id="losses">
             <h2>Losses</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -1070,7 +1054,7 @@
         </section>
 
         <!-- Autoregressive Models -->
-        <section id="autoregressive-models" class="animate-on-scroll">
+        <section id="autoregressive-models">
             <h2>Autoregressive Models</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1173,7 +1157,7 @@
         </section>
 
         <!-- Gradient Descent -->
-        <section id="gradient-descent" class="animate-on-scroll">
+        <section id="gradient-descent">
             <h2>Gradient Descent</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1256,7 +1240,7 @@
         </section>
 
         <!-- Backpropagation -->
-        <section id="backpropagation" class="animate-on-scroll">
+        <section id="backpropagation">
             <h2>Backpropagation</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1399,7 +1383,7 @@
         </section>
 
         <!-- The Value of Depth -->
-        <section id="value-of-depth" class="animate-on-scroll">
+        <section id="value-of-depth">
             <h2>The Value of Depth</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1552,7 +1536,7 @@
         </section>
 
         <!-- The Notion of Layer -->
-        <section id="notion-of-layer" class="animate-on-scroll">
+        <section id="notion-of-layer">
             <h2>The Notion of Layer</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1638,7 +1622,7 @@
         </section>
 
         <!-- Linear Layers -->
-        <section id="linear-layers" class="animate-on-scroll">
+        <section id="linear-layers">
             <h2>Linear Layers</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1774,7 +1758,7 @@
         </section>
 
         <!-- Activation Functions -->
-        <section id="activation-functions" class="animate-on-scroll">
+        <section id="activation-functions">
             <h2>Activation Functions</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1893,7 +1877,7 @@
         </section>
 
         <!-- Pooling -->
-        <section id="pooling" class="animate-on-scroll">
+        <section id="pooling">
             <h2>Pooling</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -2041,7 +2025,7 @@
         </section>
 
         <!-- Dropout -->
-        <section id="dropout" class="animate-on-scroll">
+        <section id="dropout">
             <h2>Dropout</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2169,7 +2153,7 @@
         </section>
 
         <!-- Attention Layers -->
-        <section id="attention-layers" class="animate-on-scroll">
+        <section id="attention-layers">
             <h2>Attention Layers</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2309,7 +2293,7 @@
          </section>
 
         <!-- Token Embedding -->
-        <section id="token-embedding" class="animate-on-scroll">
+        <section id="token-embedding">
             <h2>Token Embedding</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2422,7 +2406,7 @@
         </section>
 
         <!-- Multi-head Attention -->
-        <section id="multi-head-attention" class="animate-on-scroll">
+        <section id="multi-head-attention">
             <h2>Multi-head Attention</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2522,7 +2506,7 @@
         </section>
 
         <!-- Transformer -->
-        <section id="transformer" class="animate-on-scroll">
+        <section id="transformer">
             <h2>Transformer</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2603,7 +2587,7 @@
         </section>
 
         <!-- GPT Model -->
-        <section id="gpt-model" class="animate-on-scroll">
+        <section id="gpt-model">
             <h2>GPT Model</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2731,7 +2715,7 @@
         </section>
 
         <!-- Chain of Thought -->
-        <section id="chain-of-thought" class="animate-on-scroll">
+        <section id="chain-of-thought">
             <h2>Chain of Thought</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2804,7 +2788,7 @@
         </section>
 
         <!-- Quantization -->
-        <section id="quantization" class="animate-on-scroll">
+        <section id="quantization">
             <h2>Quantization</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2942,37 +2926,32 @@
                 );
             }
             
-            // Function to reset SVG animations
+            // Function to completely reset SVG animations
             function resetSvgAnimations(element) {
-                const svgElements = element.querySelectorAll('svg [begin]');
-                svgElements.forEach(svgElement => {
-                    // Reset the animation by removing and re-adding the element
-                    const parent = svgElement.parentNode;
-                    const clone = svgElement.cloneNode(true);
+                // Get all SVG elements with animations
+                const svgElements = element.querySelectorAll('svg');
+                
+                svgElements.forEach(svg => {
+                    // Create a fresh copy of the SVG
+                    const newSvg = svg.cloneNode(true);
                     
-                    // Reset opacity to 0
-                    clone.style.opacity = '0';
+                    // Replace the old SVG with the new one
+                    svg.parentNode.replaceChild(newSvg, svg);
                     
-                    // For elements with animation
-                    if (clone.querySelector('animate')) {
-                        // Reset all animations
-                        const animations = clone.querySelectorAll('animate');
-                        animations.forEach(animation => {
-                            // Reset the animation by forcing a reflow
-                            animation.setAttribute('begin', animation.getAttribute('begin').replace(/\d+(\.\d+)?s/, '0s'));
-                        });
-                    }
-                    
-                    // Replace the element
-                    parent.replaceChild(clone, svgElement);
+                    // Reset all animated elements within the new SVG
+                    const animatedElements = newSvg.querySelectorAll('[begin]');
+                    animatedElements.forEach(el => {
+                        el.style.opacity = '0';
+                    });
                 });
             }
             
             // Function to handle scroll animation
             function handleScrollAnimation() {
                 const elements = document.querySelectorAll('.animate-on-scroll');
+                
                 elements.forEach(element => {
-                    const elementId = element.id || element.getAttribute('class');
+                    const elementId = element.id || Math.random().toString(36).substr(2, 9);
                     const isCurrentlyInViewport = isInViewport(element);
                     const wasInViewport = animatedSections.get(elementId);
                     
@@ -2983,16 +2962,20 @@
                         
                         // If this is the first time seeing this element or it was previously out of viewport
                         if (wasInViewport === false || wasInViewport === undefined) {
-                            // Reset and restart animations
+                            console.log('Resetting animations for', elementId);
+                            
+                            // Reset all SVG animations
                             resetSvgAnimations(element);
                             
                             // Animate SVG elements inside this section with a staggered delay
-                            const svgElements = element.querySelectorAll('svg [begin]');
-                            svgElements.forEach((svgElement, index) => {
-                                setTimeout(() => {
-                                    svgElement.style.opacity = '1';
-                                }, index * 200); // Stagger the animations
-                            });
+                            setTimeout(() => {
+                                const svgElements = element.querySelectorAll('svg [begin]');
+                                svgElements.forEach((svgElement, index) => {
+                                    setTimeout(() => {
+                                        svgElement.style.opacity = '1';
+                                    }, index * 100); // Stagger the animations
+                                });
+                            }, 100); // Small delay to ensure DOM is updated
                         }
                         
                         // Mark as in viewport
@@ -3001,12 +2984,6 @@
                         // Element is out of viewport
                         element.style.opacity = '0';
                         element.style.transform = 'translateY(20px)';
-                        
-                        // Reset SVG animations when out of viewport
-                        const svgElements = element.querySelectorAll('svg [begin]');
-                        svgElements.forEach(svgElement => {
-                            svgElement.style.opacity = '0';
-                        });
                         
                         // Mark as out of viewport
                         animatedSections.set(elementId, false);
@@ -3017,8 +2994,12 @@
             // Initial check
             handleScrollAnimation();
             
-            // Add scroll event listener
-            window.addEventListener('scroll', handleScrollAnimation);
+            // Add scroll event listener with debounce for better performance
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(handleScrollAnimation, 10);
+            });
         });
     </script>
 </body>
