@@ -42,40 +42,15 @@
             font-weight: 400;            
         }
 
-        section {
-            margin-bottom: 4rem;
+        /* Animation styles */
+        .animate-on-scroll {
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
-        /* Animation for sections when they come into view */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* CSS-only solution using scroll-driven animations (modern browsers) */
-        @supports (animation-timeline: scroll()) {
-            section {
-                animation: fadeInUp 0.8s ease-out forwards;
-                animation-timeline: view();
-                animation-range: entry 10% cover 30%;
-            }
-        }
-
-        /* For browsers that don't support scroll-driven animations */
-        @supports not (animation-timeline: view()) {
-            section.in-view {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        section {
+            margin-bottom: 4rem;
         }
 
         .visualization {
@@ -90,14 +65,10 @@
             overflow: visible;
         }
 
-        /* Pause all SVG animations initially */
+        /* Remove all SVG animations and control them with CSS */
         svg [begin] {
-            animation-play-state: paused;
-        }
-
-        /* Play animations when section is in view */
-        section.in-view svg [begin] {
-            animation-play-state: running;
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
         }
 
         .axis {
@@ -620,7 +591,7 @@
         <h1>Little App of Deep Learning</h1>
 
         <!-- 1. Foundations - Machine Learning -->
-        <section id="learning-from-data">
+        <section id="learning-from-data" class="animate-on-scroll">
             <h2>Learning from Data</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -672,7 +643,7 @@
         </section>
 
         <!-- Basis Function Regression -->
-        <section id="basis-function-regression">
+        <section id="basis-function-regression" class="animate-on-scroll">
             <h2>Basis Function Regression</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -728,7 +699,7 @@
         </section>
 
         <!-- Under and Overfitting -->
-        <section id="under-overfitting">
+        <section id="under-overfitting" class="animate-on-scroll">
             <h2>Under and Overfitting</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Left Graph (Underfitting) -->
@@ -828,7 +799,7 @@
         </section>
 
         <!-- GPUs, TPUs, and Batches -->
-        <section id="hardware-acceleration">
+        <section id="hardware-acceleration" class="animate-on-scroll">
             <h2>GPUs, TPUs, and Batches</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- CPU (for comparison) -->
@@ -927,7 +898,7 @@
         </section>
 
         <!-- Tensors -->
-        <section id="tensors">
+        <section id="tensors" class="animate-on-scroll">
             <h2>Tensors</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- 1D Tensor (Vector) -->
@@ -1045,7 +1016,7 @@
         </section>
 
         <!-- Losses -->
-        <section id="losses">
+        <section id="losses" class="animate-on-scroll">
             <h2>Losses</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Coordinate System -->
@@ -1097,7 +1068,7 @@
         </section>
 
         <!-- Autoregressive Models -->
-        <section id="autoregressive-models">
+        <section id="autoregressive-models" class="animate-on-scroll">
             <h2>Autoregressive Models</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1200,7 +1171,7 @@
         </section>
 
         <!-- Gradient Descent -->
-        <section id="gradient-descent">
+        <section id="gradient-descent" class="animate-on-scroll">
             <h2>Gradient Descent</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1283,7 +1254,7 @@
         </section>
 
         <!-- Backpropagation -->
-        <section id="backpropagation">
+        <section id="backpropagation" class="animate-on-scroll">
             <h2>Backpropagation</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1426,7 +1397,7 @@
         </section>
 
         <!-- The Value of Depth -->
-        <section id="value-of-depth">
+        <section id="value-of-depth" class="animate-on-scroll">
             <h2>The Value of Depth</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1579,7 +1550,7 @@
         </section>
 
         <!-- The Notion of Layer -->
-        <section id="notion-of-layer">
+        <section id="notion-of-layer" class="animate-on-scroll">
             <h2>The Notion of Layer</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1665,7 +1636,7 @@
         </section>
 
         <!-- Linear Layers -->
-        <section id="linear-layers">
+        <section id="linear-layers" class="animate-on-scroll">
             <h2>Linear Layers</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -1801,7 +1772,7 @@
         </section>
 
         <!-- Activation Functions -->
-        <section id="activation-functions">
+        <section id="activation-functions" class="animate-on-scroll">
             <h2>Activation Functions</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -1920,7 +1891,7 @@
         </section>
 
         <!-- Pooling -->
-        <section id="pooling">
+        <section id="pooling" class="animate-on-scroll">
             <h2>Pooling</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Arrow Marker Definition -->
@@ -2068,7 +2039,7 @@
         </section>
 
         <!-- Dropout -->
-        <section id="dropout">
+        <section id="dropout" class="animate-on-scroll">
             <h2>Dropout</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2196,7 +2167,7 @@
         </section>
 
         <!-- Attention Layers -->
-        <section id="attention-layers">
+        <section id="attention-layers" class="animate-on-scroll">
             <h2>Attention Layers</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2336,7 +2307,7 @@
          </section>
 
         <!-- Token Embedding -->
-        <section id="token-embedding">
+        <section id="token-embedding" class="animate-on-scroll">
             <h2>Token Embedding</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2449,7 +2420,7 @@
         </section>
 
         <!-- Multi-head Attention -->
-        <section id="multi-head-attention">
+        <section id="multi-head-attention" class="animate-on-scroll">
             <h2>Multi-head Attention</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2549,7 +2520,7 @@
         </section>
 
         <!-- Transformer -->
-        <section id="transformer">
+        <section id="transformer" class="animate-on-scroll">
             <h2>Transformer</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2630,7 +2601,7 @@
         </section>
 
         <!-- GPT Model -->
-        <section id="gpt-model">
+        <section id="gpt-model" class="animate-on-scroll">
             <h2>GPT Model</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2758,7 +2729,7 @@
         </section>
 
         <!-- Chain of Thought -->
-        <section id="chain-of-thought">
+        <section id="chain-of-thought" class="animate-on-scroll">
             <h2>Chain of Thought</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2831,7 +2802,7 @@
         </section>
 
         <!-- Quantization -->
-        <section id="quantization">
+        <section id="quantization" class="animate-on-scroll">
             <h2>Quantization</h2>
             <svg class="visualization" viewBox="0 0 400 300">
                 <!-- Title -->
@@ -2948,23 +2919,48 @@
         </section>
     </div>
 
-    <!-- Add this script at the end of the body to handle scroll animations -->
+    <!-- Simple script to handle scroll animations -->
     <script>
-        // Use Intersection Observer for all browsers to ensure compatibility
-        const sections = document.querySelectorAll('section');
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('in-view');
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add the animate-on-scroll class to all sections
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => {
+                section.classList.add('animate-on-scroll');
             });
-        }, {
-            threshold: 0.2
-        });
-        
-        sections.forEach(section => {
-            observer.observe(section);
+            
+            // Function to check if an element is in viewport
+            function isInViewport(element) {
+                const rect = element.getBoundingClientRect();
+                return (
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+                    rect.bottom >= 0
+                );
+            }
+            
+            // Function to handle scroll animation
+            function handleScrollAnimation() {
+                const elements = document.querySelectorAll('.animate-on-scroll');
+                elements.forEach(element => {
+                    if (isInViewport(element)) {
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
+                        
+                        // Animate SVG elements inside this section
+                        const svgElements = element.querySelectorAll('svg [begin]');
+                        svgElements.forEach((svgElement, index) => {
+                            setTimeout(() => {
+                                svgElement.style.opacity = '1';
+                            }, index * 200); // Stagger the animations
+                        });
+                    }
+                });
+            }
+            
+            // Initial check
+            handleScrollAnimation();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', handleScrollAnimation);
         });
     </script>
 </body>
