@@ -2930,6 +2930,9 @@
                 section.classList.add('animate-on-scroll');
             });
             
+            // Track which sections have been animated
+            const animatedSections = new Map();
+            
             // Function to check if an element is in viewport
             function isInViewport(element) {
                 const rect = element.getBoundingClientRect();
@@ -2939,24 +2942,63 @@
                 );
             }
             
+            // Function to reset SVG animations
+            function resetSvgAnimations(element) {
+                const svgElements = element.querySelectorAll('svg [begin]');
+                svgElements.forEach(svgElement => {
+                    // Reset the animation by removing and re-adding the element
+                    const parent = svgElement.parentNode;
+                    const clone = svgElement.cloneNode(true);
+                    
+                    // Reset opacity to 0
+                    clone.style.opacity = '0';
+                    
+                    // For elements with animation
+                    if (clone.querySelector('animate')) {
+                        // Reset all animations
+                        const animations = clone.querySelectorAll('animate');
+                        animations.forEach(animation => {
+                            // Reset the animation by forcing a reflow
+                            animation.setAttribute('begin', animation.getAttribute('begin').replace(/\d+(\.\d+)?s/, '0s'));
+                        });
+                    }
+                    
+                    // Replace the element
+                    parent.replaceChild(clone, svgElement);
+                });
+            }
+            
             // Function to handle scroll animation
             function handleScrollAnimation() {
                 const elements = document.querySelectorAll('.animate-on-scroll');
                 elements.forEach(element => {
-                    if (isInViewport(element)) {
-                        // Fade in when in viewport
+                    const elementId = element.id || element.getAttribute('class');
+                    const isCurrentlyInViewport = isInViewport(element);
+                    const wasInViewport = animatedSections.get(elementId);
+                    
+                    if (isCurrentlyInViewport) {
+                        // Element is in viewport
                         element.style.opacity = '1';
                         element.style.transform = 'translateY(0)';
                         
-                        // Animate SVG elements inside this section
-                        const svgElements = element.querySelectorAll('svg [begin]');
-                        svgElements.forEach((svgElement, index) => {
-                            setTimeout(() => {
-                                svgElement.style.opacity = '1';
-                            }, index * 200); // Stagger the animations
-                        });
+                        // If this is the first time seeing this element or it was previously out of viewport
+                        if (wasInViewport === false || wasInViewport === undefined) {
+                            // Reset and restart animations
+                            resetSvgAnimations(element);
+                            
+                            // Animate SVG elements inside this section with a staggered delay
+                            const svgElements = element.querySelectorAll('svg [begin]');
+                            svgElements.forEach((svgElement, index) => {
+                                setTimeout(() => {
+                                    svgElement.style.opacity = '1';
+                                }, index * 200); // Stagger the animations
+                            });
+                        }
+                        
+                        // Mark as in viewport
+                        animatedSections.set(elementId, true);
                     } else {
-                        // Fade out when out of viewport
+                        // Element is out of viewport
                         element.style.opacity = '0';
                         element.style.transform = 'translateY(20px)';
                         
@@ -2965,6 +3007,9 @@
                         svgElements.forEach(svgElement => {
                             svgElement.style.opacity = '0';
                         });
+                        
+                        // Mark as out of viewport
+                        animatedSections.set(elementId, false);
                     }
                 });
             }
