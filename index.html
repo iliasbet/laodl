@@ -47,6 +47,7 @@
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            will-change: opacity, transform;
         }
 
         section {
@@ -69,6 +70,7 @@
         svg [begin] {
             opacity: 0;
             transition: opacity 0.5s ease-out;
+            will-change: opacity;
         }
 
         .axis {
@@ -2942,6 +2944,7 @@
                 const elements = document.querySelectorAll('.animate-on-scroll');
                 elements.forEach(element => {
                     if (isInViewport(element)) {
+                        // Fade in when in viewport
                         element.style.opacity = '1';
                         element.style.transform = 'translateY(0)';
                         
@@ -2951,6 +2954,16 @@
                             setTimeout(() => {
                                 svgElement.style.opacity = '1';
                             }, index * 200); // Stagger the animations
+                        });
+                    } else {
+                        // Fade out when out of viewport
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(20px)';
+                        
+                        // Reset SVG animations when out of viewport
+                        const svgElements = element.querySelectorAll('svg [begin]');
+                        svgElements.forEach(svgElement => {
+                            svgElement.style.opacity = '0';
                         });
                     }
                 });
