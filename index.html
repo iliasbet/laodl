@@ -570,6 +570,11 @@
             fill: white;
             text-anchor: middle;
         }
+
+        .paused-animations * {
+            animation-play-state: paused !important;
+            transition: none !important;
+        }
     </style>
 </head>
 <body>
@@ -2934,32 +2939,72 @@
                 );
             }
             
-            // Function to completely reset SVG animations
-            function resetSvgAnimations(element) {
-                // Get all SVG elements with animations
+            // Function to pause SVG animations
+            function pauseSvgAnimations(element) {
                 const svgElements = element.querySelectorAll('svg');
                 
                 svgElements.forEach(svg => {
-                    // Create a fresh copy of the SVG
-                    const newSvg = svg.cloneNode(true);
+                    // Find all animation elements
+                    const animations = svg.querySelectorAll('animate, animateTransform, animateMotion');
                     
-                    // Replace the old SVG with the new one
-                    svg.parentNode.replaceChild(newSvg, svg);
+                    // Pause each animation by setting its 'running' attribute to false
+                    animations.forEach(animation => {
+                        // Using beginElement() and endElement() to control animations
+                        if (animation.getAttribute('begin') !== 'indefinite') {
+                            // Store the original begin value if not already stored
+                            if (!animation.hasAttribute('data-original-begin')) {
+                                animation.setAttribute('data-original-begin', animation.getAttribute('begin') || '0s');
+                            }
+                            // Set to indefinite to pause
+                            animation.setAttribute('begin', 'indefinite');
+                        }
+                    });
                     
-                    // Reset all animated elements within the new SVG
-                    const animatedElements = newSvg.querySelectorAll('[begin]');
+                    // Also pause CSS transitions by adding a class
+                    svg.classList.add('paused-animations');
+                });
+            }
+            
+            // Function to resume SVG animations
+            function resumeSvgAnimations(element) {
+                const svgElements = element.querySelectorAll('svg');
+                
+                svgElements.forEach(svg => {
+                    // Find all animation elements
+                    const animations = svg.querySelectorAll('animate, animateTransform, animateMotion');
+                    
+                    // Resume each animation
+                    animations.forEach(animation => {
+                        if (animation.hasAttribute('data-original-begin')) {
+                            // Restore the original begin value
+                            animation.setAttribute('begin', animation.getAttribute('data-original-begin'));
+                            // Try to restart the animation
+                            try {
+                                animation.beginElement();
+                            } catch (e) {
+                                // Some browsers might not support beginElement
+                                console.log('Animation restart not supported in this browser');
+                            }
+                        }
+                    });
+                    
+                    // Remove the pause class
+                    svg.classList.remove('paused-animations');
+                    
+                    // Make all animated elements visible
+                    const animatedElements = svg.querySelectorAll('[begin]');
                     animatedElements.forEach(el => {
-                        el.style.opacity = '0';
+                        el.style.opacity = '1';
                     });
                 });
             }
             
-            // Function to reset all animations except for the current section
-            function resetAllAnimationsExcept(currentSectionId) {
+            // Function to pause all animations except for the current section
+            function pauseAllAnimationsExcept(currentSectionId) {
                 sections.forEach(section => {
                     if (section.id !== currentSectionId) {
-                        // Reset animations for all other sections
-                        resetSvgAnimations(section);
+                        // Pause animations for all other sections
+                        pauseSvgAnimations(section);
                     }
                 });
             }
@@ -2977,32 +3022,22 @@
                         if (currentActiveSection !== section.id) {
                             console.log('New active section:', section.id);
                             
-                            // Reset the previous active section if there was one
+                            // Pause the previous active section if there was one
                             if (currentActiveSection) {
                                 const prevSection = document.getElementById(currentActiveSection);
                                 if (prevSection) {
-                                    resetSvgAnimations(prevSection);
+                                    pauseSvgAnimations(prevSection);
                                 }
                             }
                             
                             // Set the new active section
                             currentActiveSection = section.id;
                             
-                            // Reset all other sections
-                            resetAllAnimationsExcept(currentActiveSection);
+                            // Pause all other sections
+                            pauseAllAnimationsExcept(currentActiveSection);
                             
-                            // Reset and start animations for this section
-                            resetSvgAnimations(section);
-                            
-                            // Animate SVG elements inside this section with a staggered delay
-                            setTimeout(() => {
-                                const svgElements = section.querySelectorAll('svg [begin]');
-                                svgElements.forEach((svgElement, index) => {
-                                    setTimeout(() => {
-                                        svgElement.style.opacity = '1';
-                                    }, index * 100); // Stagger the animations
-                                });
-                            }, 100); // Small delay to ensure DOM is updated
+                            // Resume animations for this section
+                            resumeSvgAnimations(section);
                         }
                     }
                 });
@@ -3012,6 +3047,16 @@
                     currentActiveSection = null;
                 }
             }
+            
+            // Add CSS for paused animations
+            const style = document.createElement('style');
+            style.textContent = `
+                .paused-animations * {
+                    animation-play-state: paused !important;
+                    transition: none !important;
+                }
+            `;
+            document.head.appendChild(style);
             
             // Initial check
             handleScrollAnimation();
