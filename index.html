@@ -2916,6 +2916,9 @@
                 if (!section.id) {
                     section.id = 'section-' + index;
                 }
+                // Make all sections visible initially
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
             });
             
             // Track which section is currently active
@@ -2988,10 +2991,6 @@
                             // Reset all other sections
                             resetAllAnimationsExcept(currentActiveSection);
                             
-                            // Make the current section visible
-                            section.style.opacity = '1';
-                            section.style.transform = 'translateY(0)';
-                            
                             // Reset and start animations for this section
                             resetSvgAnimations(section);
                             
@@ -3005,10 +3004,6 @@
                                 });
                             }, 100); // Small delay to ensure DOM is updated
                         }
-                    } else if (!isInViewport(section)) {
-                        // Fade out sections that are not in viewport
-                        section.style.opacity = '0';
-                        section.style.transform = 'translateY(20px)';
                     }
                 });
                 
